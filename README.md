@@ -1,2 +1,2 @@
 # js-command-line
-Js command line. Clean look the dog shit created for to pump over it skills on js. but it work
+It a clean look the dog shit created for pumping of skills on js. What can it? Anything. Unless only to create new html tags, to delete, change styles, добалять or to delete events. It was created for my project on recognition of the speech on Cpp. As I also did not know that I want from js, created it, for generation of the page about servers and construction on the client. Any html only js, clean js.
