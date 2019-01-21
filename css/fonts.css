@@ -1,0 +1,440 @@
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,700);
+
+
+@font-face {
+  font-family: "Horizon-Lines";
+  src: url("fonts/Horizon/Horizon-Lines.otf");
+  src:
+    url("fonts/Horizon/Horizon-Lines.otf") format("opentype"),
+}
+
+@font-face {
+  font-family: "Horizon-LinesTwo";
+  src: url("fonts/Horizon/Horizon-Linestwo.otf");
+  src:
+    url("fonts/Horizon/Horizon-Linestwo.otf") format("opentype"),
+}
+
+@font-face {
+  font-family: "Horizon-Outline";
+  src: url("fonts/Horizon/Horizon-Outline.otf");
+  src:
+    url("fonts/Horizon/Horizon-Outline.otf") format("opentype"),
+}
+
+@font-face {
+  font-family: "Horizon-OutlineTwo";
+  src: url("fonts/Horizon/Horizon-Outlinetwo.otf");
+  src:
+    url("fonts/Horizon/Horizon-Outlinetwo.otf") format("opentype"),
+}
+
+@font-face {
+  font-family: "Horizon";
+  src: url("fonts/Horizon/Horizon.otf");
+  src:
+    url("fonts/Horizon/Horizon.otf") format("opentype"),
+}
+
+
+
+@font-face {
+  font-family: "Corbel";
+  src: url("fonts/corbel.TTF");
+  src:
+    url("fonts/corbel.TTF") format("truetype"),
+}
+
+@font-face {
+  font-family: "Enzyme";
+  src: url("fonts/Enzyme.otf");
+  src:
+    url("fonts/Enzyme.otf") format("opentype"),
+}
+
+
+
+@font-face {
+  font-family: "Axon-Bold";
+  src: url("fonts/Axon Minimalist/Axon-Bold.otf");
+  src:
+    url("fonts/Axon Minimalist/Axon-Bold.otf") format("opentype"),
+}
+
+@font-face {
+  font-family: "Axon-Light";
+  src: url("fonts/Axon Minimalist/Axon-Light.otf");
+  src:
+    url("fonts/Axon Minimalist/Axon-Light.otf") format("opentype"),
+}
+
+@font-face {
+  font-family: "Axon-Regular";
+  src: url("fonts/Axon Minimalist/Axon-Regular.otf");
+  src:
+    url("fonts/Axon Minimalist/Axon-Regularo.otf") format("opentype"),
+}
+
+@font-face {
+  font-family: "Axon-UltraLight";
+  src: url("fonts/Axon Minimalist/Axon-UltraLight.otf");
+  src:
+    url("fonts/Axon Minimalist/Axon-UltraLight.otf") format("opentype"),
+}
+
+
+.font-horizon {
+  font-family: "Horizon", Arial, sans-serif;
+}
+
+.font-horizon_lines {
+  font-family: "Horizon-Lines", Arial, sans-serif;
+}
+
+.font-horizon_linestwo {
+  font-family: "Horizon-LinesTwo", Arial, sans-serif;
+}
+
+.font-horizon_outline {
+  font-family: "Horizon-Outline", Arial, sans-serif;
+}
+
+.font-horizon_outlinetwo {
+  font-family: "Horizon-OutlineTwo", Arial, sans-serif;
+}
+
+.font-enzyme {
+  font-family: "Enzyme", Arial, sans-serif;
+}
+
+.font-corbel {
+  font-family: "Corbel", Arial, sans-serif;
+}
+
+.font-axon {
+  font-family: "Axon-Regular", Arial, sans-serif;
+}
+
+.font-axon_light {
+  font-family: "Axon-Light", Arial, sans-serif;
+}
+
+.font-axon_ultralight {
+  font-family: "Axon-UltraLight", Arial, sans-serif;
+}
+
+.font-axon_bold {
+  font-family: "Axon-Bold", Arial, sans-serif;
+}
+
+.font-weight-100 {
+  font-weight: 100;
+}
+
+.font-weight-200 {
+  font-weight: 200;
+}
+
+.font-weight-300 {
+  font-weight: 300;
+}
+
+.font-weight-400 {
+  font-weight: 400;
+}
+
+.font-weight-500 {
+  font-weight: 500;
+}
+
+.font-weight-600 {
+  font-weight: 600;
+}
+
+.font-weight-700 {
+  font-weight: 700;
+}
+
+.font-weight-800 {
+  font-weight: 800;
+}
+
+.font-weight-900 {
+  font-weight: 900;
+}
+
+.font-weight-normal {
+  font-weight: normal;
+}
+
+.font-weight-bold {
+  font-weight: bold;
+}
+
+.font-weight-bolder {
+  font-weight: bolder;
+}
+
+.font-weight-lighter {
+  font-weight: lighter;
+}
+
+.font-size-8 {
+  font-size: 8pt;
+}
+
+.font-size-9 {
+  font-size: 9pt;
+}
+
+.font-size-10 {
+  font-size: 10pt;
+}
+
+.font-size-11 {
+  font-size: 11pt;
+}
+
+.font-size-12 {
+  font-size: 12pt;
+}
+
+.font-size-13 {
+  font-size: 13pt;
+}
+
+.font-size-14 {
+  font-size: 14pt;
+}
+
+.font-size-15 {
+  font-size: 15pt;
+}
+
+.font-size-16 {
+  font-size: 16pt;
+}
+
+.font-size-17 {
+  font-size: 17pt;
+}
+
+.font-size-18 {
+  font-size: 18pt;
+}
+
+.font-size-19 {
+  font-size: 19pt;
+}
+
+.font-size-20 {
+  font-size: 20pt;
+}
+
+.font-size-21 {
+  font-size: 21pt;
+}
+
+.font-size-22 {
+  font-size: 22pt;
+}
+
+.font-size-23 {
+  font-size: 23pt;
+}
+
+.font-size-24 {
+  font-size: 24pt;
+}
+
+.font-size-25 {
+  font-size: 25pt;
+}
+
+.font-size-26 {
+  font-size: 26pt;
+}
+
+.font-size-27 {
+  font-size: 27pt;
+}
+
+.font-size-28 {
+  font-size: 28pt;
+}
+
+.font-size-29 {
+  font-size: 29pt;
+}
+
+.font-size-30 {
+  font-size: 30pt;
+}
+
+.font-size-31 {
+  font-size: 31pt;
+}
+
+.font-size-32 {
+  font-size: 32pt;
+}
+
+.font-size-33 {
+  font-size: 33pt;
+}
+
+.font-size-34 {
+  font-size: 34pt;
+}
+
+.font-size-35 {
+  font-size: 35pt;
+}
+
+.font-size-36 {
+  font-size: 36pt;
+}
+
+.font-size-37 {
+  font-size: 37pt;
+}
+
+.font-size-38 {
+  font-size: 38pt;
+}
+
+.font-size-39 {
+  font-size: 39pt;
+}
+
+.font-size-40 {
+  font-size: 40pt;
+}
+
+.font-size-41 {
+  font-size: 41pt;
+}
+
+.font-size-42 {
+  font-size: 42pt;
+}
+
+.font-size-43 {
+  font-size: 43pt;
+}
+
+.font-size-44 {
+  font-size: 44pt;
+}
+
+.font-size-45 {
+  font-size: 45pt;
+}
+
+.font-size-46 {
+  font-size: 46pt;
+}
+
+.font-size-47 {
+  font-size: 47pt;
+}
+
+.font-size-48 {
+  font-size: 48pt;
+}
+
+.font-size-49 {
+  font-size: 49pt;
+}
+
+.font-size-50 {
+  font-size: 50pt;
+}
+
+.font-size-51 {
+  font-size: 51pt;
+}
+
+.font-size-52 {
+  font-size: 52pt;
+}
+
+.font-size-53 {
+  font-size: 53pt;
+}
+
+.font-size-54 {
+  font-size: 54pt;
+}
+
+.font-size-55 {
+  font-size: 55pt;
+}
+
+.font-size-56 {
+  font-size: 56pt;
+}
+
+.font-size-57 {
+  font-size: 57pt;
+}
+
+.font-size-58 {
+  font-size: 58pt;
+}
+
+.font-size-59 {
+  font-size: 59pt;
+}
+
+.font-size-60 {
+  font-size: 60pt;
+}
+
+.font-size-61 {
+  font-size: 61pt;
+}
+
+.font-size-62 {
+  font-size: 62pt;
+}
+
+.font-size-63 {
+  font-size: 63pt;
+}
+
+.font-size-64 {
+  font-size: 64pt;
+}
+
+.font-size-65 {
+  font-size: 65pt;
+}
+
+.font-size-66 {
+  font-size: 66pt;
+}
+
+.font-size-67 {
+  font-size: 67pt;
+}
+
+.font-size-68 {
+  font-size: 68pt;
+}
+
+.font-size-69 {
+  font-size: 69pt;
+}
+
+.font-size-70 {
+  font-size: 70pt;
+}
+
+.font-size-71 {
+  font-size: 71pt;
+}
+
+.font-size-72 {
+  font-size: 72pt;
+}

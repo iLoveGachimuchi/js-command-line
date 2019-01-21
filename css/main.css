@@ -1,0 +1,54 @@
+textarea,
+input,
+button,
+select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #4930d8;
+  color: white;
+  font: 15pt/21pt "Horizon", Arial, sans-serif;
+}
+
+.voice-recorder {
+  height: auto;
+}
+
+.voice-recorder p {
+  height: auto;
+}
+
+
+._server {
+  font: 15pt/21pt "corbel", Arial, sans-serif;
+  position: absolute;
+  top: 120px;
+  left: 430px;
+  width: 400px;
+  height: 240px;
+  background: white;
+  border: black 1;
+  border-radius: 5px;
+}
+
+._server-input {
+  text-align: inherit;
+  resize: none;
+  width: 99%;
+  height: 90%;
+  border-style: none;
+  border-radius: 5px;
+  color: black;
+}
+
+._server-button {
+  width: 100%;
+  height: 10%;
+  border-style: none;
+  border-radius: 5px;
+  color: black;
+}
