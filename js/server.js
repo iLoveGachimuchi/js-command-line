@@ -52,8 +52,12 @@ var t_console_button_style = {
 };
 
 
+var t_command_com = ["add", "del", "change", "server", "func", "load"];
+var t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load"];
+var t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section", "td", "th", "title", "a", "header", "footer"];
+var t_command_param = ["type", "src", "image", "name", "id", "text", "value"];
 
-var t_comand_funcList = {
+var t_command_funcs = {
   test_FontsShow: test_FontsShow
 };
 
@@ -70,11 +74,11 @@ var t_command_struct = {
 };
 
 var t_command_struct_add = {
-  action: "add",
   tag: "",
   style: "",
   parrent: "",
   event: "",
+  param: "",
   text: ""
 };
 var t_command_struct_del = {};
@@ -106,7 +110,7 @@ class t_dragManager {
 
     if (e.which != 1) return;
 
-    var elem = e.target.closest('.draggable');
+    var elem = e.target.closest(".draggable");
     if (!elem) return;
 
     this.dragObject.elem = elem;
@@ -143,8 +147,8 @@ class t_dragManager {
       this.startDrag(e);
     }
 
-    this.dragObject.avatar.style.left = e.pageX - this.dragObject.shiftX + 'px';
-    this.dragObject.avatar.style.top = e.pageY - this.dragObject.shiftY + 'px';
+    this.dragObject.avatar.style.left = e.pageX - this.dragObject.shiftX + "px";
+    this.dragObject.avatar.style.top = e.pageY - this.dragObject.shiftY + "px";
 
     return false;
   }
@@ -175,10 +179,10 @@ class t_dragManager {
     var old = {
       parent: avatar.parentNode,
       nextSibling: avatar.nextSibling,
-      position: avatar.position || '',
-      left: avatar.left || '',
-      top: avatar.top || '',
-      zIndex: avatar.zIndex || ''
+      position: avatar.position || "",
+      left: avatar.left || "",
+      top: avatar.top || "",
+      zIndex: avatar.zIndex || ""
     };
 
     avatar.rollback = function () {
@@ -197,7 +201,7 @@ class t_dragManager {
 
     document.body.appendChild(avatar);
     avatar.style.zIndex = 9999;
-    avatar.style.position = 'absolute';
+    avatar.style.position = "absolute";
   }
 
   findDroppable(event) {
@@ -211,7 +215,7 @@ class t_dragManager {
       return null;
     }
 
-    return elem.closest('.droppable');
+    return elem.closest(".droppable");
   }
 
   findFocus(elem) {
@@ -441,11 +445,26 @@ class t_console {
 class t_server_log {
 
   constructor() {
-    this.erLog = [];
+    this.story = [];
+    this.err = [];
+  }
+
+  print(line) {
+    this.story.push(line);
+    console.log(line);
+  }
+
+  throw (line) {
+    this.err.push(line);
+    console.log(line);
+  }
+
+  type(line) {
+    varDump(line);
   }
 
   printStatus() {
-    console.log("==================\nserver active\n==================");
+    //console.log("==================\nserver active\n==================");
   }
 };
 
@@ -453,9 +472,11 @@ class t_server_log {
 /**
  * 
  * add
- * ""
- * style{param1: "", param2: "", ClassName: ""}
+ * tag /input{type:text, src:src/2}
+ * style{param1: "", param2: "", ClassName: ""/class: ""}
+ * parrent
  * "event":""
+ * text
  * 
  * del
  * ""
@@ -464,26 +485,92 @@ class t_command {
 
   constructor(server) {
     this.server = server;
+    this.log = new t_server_log;
     this.answer = "";
+    this.story = [];
   }
 
   c(line) {
+    var line = removeSpace(line);
+    var type = null;
+
+    var a = 0;
+    var b = 0;
+    var c = 0;
+    var d = 0;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === "{" || line[i] === "}")
+        a++;
+      if (line[i] === "\"")
+        b++;
+      if (line[i] === "'")
+        c++;
+      if (line[i] === "(" || line[i] === ")")
+        d++;
+    }
+
+    if (a % 2 !== 0) {
+      this.log.throw("Is not enough closing \"}\" in " + line);
+      return null;
+    }
+    if (b % 2 !== 0) {
+      this.log.throw("Is not enough closing \" in " + line);
+      return null;
+    }
+    if (c % 2 !== 0) {
+      this.log.throw("Is not enough closing ' in " + line);
+      return null;
+    }
+    if (d % 2 !== 0) {
+      this.log.throw("Is not enough closing \")\" in " + line);
+      return null;
+    }
+
+    var arr = line.split(/\s* \s*/);
+
+    switch (arr[0].toLowerCase()) {
+      case "add":
+        type = this.add(line);
+        break;
+      case "del":
+        break;
+      case "change":
+        break;
+      case "load":
+        break;
+      case "func":
+        break;
+      case "server":
+        break;
+      default:
+        this.log.throw("Unknown command in " + arr[0]);
+        return null;
+    }
+    //t_command_events[i];
+
+    return true;
+  }
+
+  c_add(tag, style, parrent, event, param, text) {
 
   }
 
-  c_add(tag, style, parrent, event) {
-
-  }
-
+  //add in ..sryle{}
   c_add_style(findBy, style) {
 
   }
 
+  //add in "event":"func"
   c_add_event(findBy, event) {
+    /*   // Подписываемся на событие
+       elem.addEventListener("build", function (e) { ...
+       }, false);
 
+       // Вызываем событие
+       elem.dispatchEvent(event);*/
   }
 
-
+  //del byId/byTag/byClass ..
   c_del(findBy) {
 
   }
@@ -512,25 +599,157 @@ class t_command {
 
   c_new_func(func) {
 
+    // var obj = {
+    //   hello: "World",
+    //   sayHello: (function () {
+    //     console.log("I say Hello!");
+    //   }).toString()
+    // };
+    // var myobj = JSON.parse(JSON.stringify(obj));
+    // myobj.sayHello = new Function("return (" + myobj.sayHello + ")")();
+    // myobj.sayHello();
+
   }
 
+  splitParamsAdd(line) {
+    var arr = [];
+    var buf = "";
+    var i = 0;
 
+    for (i = 0; i < line.length; i++) {
+      if (line[i] === " ") {
+        if (line[i + 1] === "{") {
+
+          for (i++; i < line.length; i++) {
+            if (line[i] !== "}")
+              buf += line[i];
+            else break;
+          }
+
+          arr.push(buf + "}");
+        }
+        buf = "";
+      } else {
+        if (line[i] === "{") {
+
+          for (i; i < line.length; i++) {
+            if (line[i] !== "}")
+              buf += line[i];
+            else break;
+          }
+
+          arr.push(buf + "}");
+          buf = "";
+        } else
+          buf += line[i];
+      }
+    }
+
+    return arr;
+  }
+
+  splitParamsFunc(line) {
+    var arr = [];
+    var buf = "";
+    var i = 0;
+    //func lala (pipka) { main body pinas }
+    var lp = 0,
+      rp = 0;
+
+    for (i = 0; i < line.length; i++) {
+
+    }
+    return arr;
+  }
 
   findElem(findBy) {
 
   }
 
-  /**
-   * Checks a line for existence of structure. If there is no relevant structure stops work
-   * @param {string} line 
-   * @return {object} type of structure
-   */
-  isComand(line) {
-//TODO: попытаться регистрировать структуру "t_command_struct_add" и выполнить функцию "test_FontsShow"
+  //add  p  style{color:white,  width:  10px,  class:font-horizon  clickable}
+  //add  input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} body 
+  add(line) {
+    var bufLine = "";
+    var bufStr = "";
+    var params = [];
+    var tag = "";
+    var style = "";
+    var parrent = "";
+    var event = "";
+    var param = "";
+    var text = "";
+
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === " ") {
+        for (i++; i < line.length; i++) {
+          bufLine += line[i];
+        }
+      }
+    }
+
+    if (bufLine === "") {
+      this.log.throw("There are no parameters in " + line);
+      return null;
+    }
+
+    params = this.splitParamsAdd(bufLine);
+
+    for (let i = 0; i < params.length; i++) {
+     
+      for (let j = 0; i < params[i].length; j++) {
+        if (params[i][j] === "{") {
+          if (bufStr === "") {
+            this.log.throw("There are no parameters in " + params[i]);
+            return null;
+          }
+          if (this.isTag(bufStr)) {
+            tag = params[i].substr(j + 1, params[i].length - j - 2);
+            bufStr = "";
+            break;
+          }
+          if (bufStr === "style") {
+            style = params[i].substr(j + 1, params[i].length - j - 2);
+            bufStr = "";
+            break;
+          }
+        }
+        bufStr += params[i][j];
+      }
+    }
+    bufStr = "";
+    this.log.print(bufLine);
+    if (tag === "") {
+      for (let i; i < bufLine.length; i ++) {
+        if (bufLine[i] !== " ") {
+          bufStr += bufLine[i];
+        } else break;
+      }
+      if (bufStr !== "style" && isTag(bufStr)) {
+        tag = bufStr;
+      }
+    }
+    //TODO: добавить проверку на тип команды
   }
 
-  findStruct(line) {
+  isEvent(value) {
+    for (let i = 0; i < t_command_events.length; i++) {
+      if (t_command_events[i] === value) return true;
+    }
+    return false;
+  }
 
+  isTag(value) {
+    for (let i = 0; i < t_command_tags.length; i++) {
+      if (t_command_tags[i] === value) return true;
+    }
+    return false;
+  }
+
+  isParam(value) {
+    for (let i = 0; i < t_command_param.length; i++) {
+      if (t_command_param[i] === value) return true;
+    }
+    return false;
   }
 };
 

@@ -25,6 +25,18 @@ function varDump(value) {
   return;
 }
 
+function removeSpace(value) {
+  //value = value.replace(/\s+/g, "  ").trim();
+  value = value.split(/\s* \s*/);
+  var tm = [];
+  for (let i = 0; i < value.length; i++) {
+    if (value[i] !== " " && value[i] !== "") {
+      tm.push(value[i]);
+    }
+  }
+
+  return tm.join(" ");
+}
 
 Object.prototype.isEmpty = function () {
   for (var key in this) {
