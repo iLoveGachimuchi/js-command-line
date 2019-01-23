@@ -14,6 +14,11 @@ var test_FontsShow = function () {
 </div>';
 }
 
+function test_SayHello() {
+  alert("hi");
+}
+
+
 var t_console_style = {
   font: "12pt/21pt \"corbel\", Arial, sans-serif",
   position: "absolute",
@@ -56,6 +61,8 @@ var t_command_com = ["add", "del", "change", "server", "func", "load"];
 var t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load"];
 var t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section", "td", "th", "title", "a", "header", "footer"];
 var t_command_param = ["type", "src", "image", "name", "id", "text", "value"];
+var t_command_params = ["style", "parrent", "text", "in"];
+
 
 var t_command_funcs = {
   test_FontsShow: test_FontsShow
@@ -350,8 +357,8 @@ class t_keyHook {
  */
 class t_console {
 
-  constructor(server) {
-    this.server = server;
+  constructor(cmd) {
+    this.cmd = cmd;
 
     this.console_style = t_console_style;
 
@@ -431,7 +438,7 @@ class t_console {
   }
 
   onSend() {
-    this.server._get(this.textarea.value);
+    this.cmd.c(this.textarea.value)
     this.textarea.value = "";
   }
 
@@ -442,29 +449,44 @@ class t_console {
 
 
 
-class t_server_log {
+class t_console_log {
 
   constructor() {
     this.story = [];
     this.err = [];
+    this.tp = [];
+    this.s = false;
+    this.t = false;
   }
 
   print(line) {
-    this.story.push(line);
     console.log(line);
+  }
+
+  printf(line) {
+    this.story.push(line);
+    if (this.s) console.log(line);
   }
 
   throw (line) {
     this.err.push(line);
-    console.log(line);
+    if (this.t) console.log(line);
   }
 
   type(line) {
-    varDump(line);
+    this.tp.push(line);
+    if (this.s) varDump(line);
   }
 
-  printStatus() {
-    //console.log("==================\nserver active\n==================");
+  log() {
+    console.log("==================\nErrors\n==================");
+    for (let i = 0; i < this.err.length; i++) console.log(err[i]);
+
+    console.log("==================\nStories\n=================");
+    for (let i = 0; i < this.err.length; i++) console.log(story[i]);
+
+    console.log("==================\nTypes\n===================");
+    for (let i = 0; i < this.err.length; i++) varDump(story[i]);
   }
 };
 
@@ -485,14 +507,19 @@ class t_command {
 
   constructor(server) {
     this.server = server;
-    this.log = new t_server_log;
     this.answer = "";
     this.story = [];
+
+    this.log = new t_console_log;
+    this.log.s = false;
+    this.log.t = true;
   }
 
   c(line) {
+    this.log.printf(line);
+
+    var r = true;
     var line = removeSpace(line);
-    var type = null;
 
     var a = 0;
     var b = 0;
@@ -511,26 +538,26 @@ class t_command {
 
     if (a % 2 !== 0) {
       this.log.throw("Is not enough closing \"}\" in " + line);
-      return null;
+      return false;
     }
     if (b % 2 !== 0) {
       this.log.throw("Is not enough closing \" in " + line);
-      return null;
+      return false;
     }
     if (c % 2 !== 0) {
       this.log.throw("Is not enough closing ' in " + line);
-      return null;
+      return false;
     }
     if (d % 2 !== 0) {
       this.log.throw("Is not enough closing \")\" in " + line);
-      return null;
+      return false;
     }
 
     var arr = line.split(/\s* \s*/);
 
     switch (arr[0].toLowerCase()) {
       case "add":
-        type = this.add(line);
+        r = this.add(line);
         break;
       case "del":
         break;
@@ -542,16 +569,38 @@ class t_command {
         break;
       case "server":
         break;
+      case "c":
+        break;
       default:
         this.log.throw("Unknown command in " + arr[0]);
-        return null;
+        return false;
     }
-    //t_command_events[i];
 
     return true;
   }
 
-  c_add(tag, style, parrent, event, param, text) {
+  //add input{type:text} style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body}
+  c_add(tag, style, parrent, event, text) {
+    var param = "";
+    var buf = "";
+
+    for (let i = 0; i < tag.length; i++) {
+      if (tag[i] === " " || tag[i] === "{") {
+        if (tag[i] === " ") i++;
+        if (typeof tag[i] === "undefined") break;
+        for (i; i < tag.length; i++) param += tag[i];
+
+        break;
+
+      } else {
+        buf += tag[i];
+      }
+    }
+    console.log(buf);
+    console.log(param);
+    
+    
+    var newTag = document.createElement(buf);
 
   }
 
@@ -568,6 +617,16 @@ class t_command {
 
        // Вызываем событие
        elem.dispatchEvent(event);*/
+  }
+
+  //add in "event":"func"
+  c_add_text(findBy, text) {
+    /*   // Подписываемся на событие
+         elem.addEventListener("build", function (e) { ...
+         }, false);
+  
+         // Вызываем событие
+         elem.dispatchEvent(event);*/
   }
 
   //del byId/byTag/byClass ..
@@ -598,7 +657,7 @@ class t_command {
   }
 
   c_new_func(func) {
-
+    //https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/eval
     // var obj = {
     //   hello: "World",
     //   sayHello: (function () {
@@ -612,36 +671,65 @@ class t_command {
   }
 
   splitParamsAdd(line) {
+    var len = line.length;
     var arr = [];
     var buf = "";
     var i = 0;
 
-    for (i = 0; i < line.length; i++) {
-      if (line[i] === " ") {
-        if (line[i + 1] === "{") {
-
-          for (i++; i < line.length; i++) {
-            if (line[i] !== "}")
-              buf += line[i];
-            else break;
-          }
-
-          arr.push(buf + "}");
-        }
-        buf = "";
-      } else {
-        if (line[i] === "{") {
-
-          for (i; i < line.length; i++) {
-            if (line[i] !== "}")
-              buf += line[i];
-            else break;
-          }
-
-          arr.push(buf + "}");
-          buf = "";
-        } else
+    var f1 = () => {
+      for (i; i < len; i++) {
+        if (line[i] !== "}")
           buf += line[i];
+        else break;
+      }
+    }
+
+    //for "event"
+    var f2 = () => {
+      var a = 1;
+      buf += "{";
+      for (i++; a > 0; i++) {
+        if (line[i] === "{") a++;
+        if (line[i] === "}") a--;
+        if (typeof line[i] !== "undefined")
+          buf += line[i];
+        if (i >= len) break;
+      }
+    }
+
+    for (i = 0; i < len; i++) {
+      if (this.isParams(buf)) {
+        if (line[i] === " ") {
+          if (line[i + 1] === "{") {
+            i++;
+            f1();
+            arr.push(buf + "}");
+          }
+          buf = "";
+        } else {
+          if (line[i] === "{") {
+            f1();
+            arr.push(buf + "}");
+            buf = "";
+          } else
+            buf += line[i];
+        }
+      } else {
+        if (line[i] === " ") {
+          if (line[i + 1] === "{") {
+            i++;
+            f2();
+            arr.push(buf);
+          }
+          buf = "";
+        } else {
+          if (line[i] === "{") {
+            f2();
+            arr.push(buf);
+            buf = "";
+          } else
+            buf += line[i];
+        }
       }
     }
 
@@ -666,17 +754,23 @@ class t_command {
 
   }
 
-  //add  p  style{color:white,  width:  10px,  class:font-horizon  clickable}
-  //add  input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} body 
+  //add p style{color:white,  width:  10px,  class:font-horizon  clickable}
+  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body} 
+  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body!} 
+  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body} event {click:test_SayHello} text{hello my pinas}
+  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body} event {click:{alert("hi")}} text{hello my pinas}
+  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body}  event {click:{alert("hi")}}
+  //add in{byTag:body} style {color:white,  width:  10px,  class:font-horizon  clickable}
+  //add in{byTag:body} style {color:white,  width:  10px,  class:font-horizon  clickable} event {click:{alert("hi")}} text{hello my pinas}
   add(line) {
     var bufLine = "";
     var bufStr = "";
     var params = [];
     var tag = "";
+    var findBy = "";
     var style = "";
     var parrent = "";
     var event = "";
-    var param = "";
     var text = "";
 
     for (let i = 0; i < line.length; i++) {
@@ -689,47 +783,107 @@ class t_command {
 
     if (bufLine === "") {
       this.log.throw("There are no parameters in " + line);
-      return null;
+      return false;
     }
 
     params = this.splitParamsAdd(bufLine);
-
     for (let i = 0; i < params.length; i++) {
-     
-      for (let j = 0; i < params[i].length; j++) {
-        if (params[i][j] === "{") {
-          if (bufStr === "") {
-            this.log.throw("There are no parameters in " + params[i]);
-            return null;
-          }
-          if (this.isTag(bufStr)) {
-            tag = params[i].substr(j + 1, params[i].length - j - 2);
+
+      for (let j = 0; j < params[i].length; j++) {
+
+        if (this.isTag(bufStr)) {
+          if (params[i][j] === " " || params[i][j] === "{") {
+            tag = params[i];
             bufStr = "";
             break;
           }
-          if (bufStr === "style") {
-            style = params[i].substr(j + 1, params[i].length - j - 2);
+        }
+        if (bufStr === "style") {
+          style = params[i];
+          bufStr = "";
+          break;
+        }
+        if (bufStr === "parrent") {
+          parrent = params[i];
+          bufStr = "";
+          break;
+        }
+        if (bufStr === "event") {
+          event = params[i];
+          bufStr = "";
+          break;
+        }
+        if (bufStr === "text") {
+          text = params[i];
+          bufStr = "";
+          break;
+        }
+        if (bufStr === "in") {
+          if (params[i][j] === " " || params[i][j] === "{") {
+            findBy = params[i];
             bufStr = "";
             break;
           }
         }
         bufStr += params[i][j];
+
       }
+
     }
     bufStr = "";
-    this.log.print(bufLine);
-    if (tag === "") {
-      for (let i; i < bufLine.length; i ++) {
-        if (bufLine[i] !== " ") {
+
+    if (tag === "" && findBy === "") {
+      for (let i = 0; i < bufLine.length; i++) {
+        if (bufLine[i] !== " " || bufLine[i] !== "{") {
           bufStr += bufLine[i];
-        } else break;
+        }
+        if (this.isTag(bufStr)) {
+          tag = bufStr;
+        }
       }
-      if (bufStr !== "style" && isTag(bufStr)) {
-        tag = bufStr;
-      }
+      bufStr = bufLine = "";
     }
-    //TODO: добавить проверку на тип команды
+
+
+    this.log.printf(params);
+    this.log.printf("findBy: " + findBy);
+    this.log.printf("tag: " + tag);
+    this.log.printf("style: " + style);
+    this.log.printf("parrent: " + parrent);
+    this.log.printf("event: " + event);
+    this.log.printf("text: " + text);
+
+
+    if (tag.length === 0) {
+      if (findBy.length === 0) {
+        this.log.throw("It is not possible to find an element. \"body\" will be by default established");
+        findBy = "in{byTag:body}";
+      }
+      if (parrent.length !== 0) {
+        this.log.throw("\"" + parrent + "\" will be ignored");
+        parrent = "";
+      }
+      if (style.length !== 0) this.c_add_style(findBy, style);
+      if (event.length !== 0) this.c_add_event(findBy, event);
+      if (text.length !== 0) this.c_add_text(findBy, text);
+
+      return true;
+
+    } else {
+      if (findBy.length !== 0) {
+        this.log.throw("\"" + findBy + "\" will be ignored");
+        findBy = "";
+      }
+      if (parrent.length === 0) {
+        this.log.throw("Еhere is no parent. \"body\" will be by default established");
+        parrent = "body";
+      }
+      this.c_add(tag, style, parrent, event, text);
+      return true;
+
+    }
   }
+
 
   isEvent(value) {
     for (let i = 0; i < t_command_events.length; i++) {
@@ -751,21 +905,24 @@ class t_command {
     }
     return false;
   }
+
+  isParams(value) {
+    for (let i = 0; i < t_command_params.length; i++) {
+      if (t_command_params[i] === value) return true;
+    }
+    return false;
+  }
 };
 
 
 class t_server {
 
-  constructor(log) {
-    this.cmd = new t_command;
+  constructor() {
 
-    this.log = log;
-    this.log.printStatus();
   }
 
   _get(command) {
-    this.cmd.c(command);
-    return this.cmd.answer;
+
   }
 
 

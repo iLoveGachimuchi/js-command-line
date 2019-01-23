@@ -1,8 +1,9 @@
-const tl = new t_server_log;
-const ts = new t_server(tl);
+const ts = new t_server;
+
+const cmd = new t_command(ts);
+const tc = new t_console(cmd);
 
 const tk = new t_keyHook;
-const tc = new t_console(ts);
 const dm = new t_dragManager;
 
 
