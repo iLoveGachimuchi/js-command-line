@@ -14,7 +14,7 @@ function varDump(value) {
     console.log("Type :", typeof (value), ", Value :", value);
     return;
   }
-  if (typeof (value) === 'object') {
+  if (typeof (value) === "object") {
     console.log(value);
     for (var val in value) {
       varDump(value[val]);

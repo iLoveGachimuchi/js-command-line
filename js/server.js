@@ -513,6 +513,8 @@ class t_command {
     this.log = new t_console_log;
     this.log.s = false;
     this.log.t = true;
+
+    this.uniqueId = 0;
   }
 
   c(line) {
@@ -579,29 +581,48 @@ class t_command {
     return true;
   }
 
-  //add input{type:text} style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body}
+  //add p style{color:white;  width:  10px;  class:font-horizon  clickable}
+  //add div{id:123, name : 333} style {color:white;  width:  10px;  class:font-horizon  clickable; background: white} parrent{byTag:body 0}
+  //add div{id:123, name : 333} style {color:white;  width:  10px;  class:font-horizon  clickable; background: white} parrent{byTag:body} event {click:{alert("hi")}} text{hello my pinas}
+  //add div{id:123, name : 333} style {color:white;  width:  10px;  class:font-horizon  clickable; background: white} parrent{byTag:body} event {click:{alert("hi")}; dblclick:{alert("mark")}} text{hello my pinas}
+  //add div{id:123, name : 333} style {color:white;  width:  10px;  class:font-horizon  clickable; background: white} parrent{byTag:body} event {click:{alert("hi");alert("hi");if(a==0){alert("hi")}}; dblclick:test_SayHello()} text{hello my pinas}
+  //add input{type:text} style {color:white;  width:  10px;  class:font-horizon  clickable} parrent{byTag:body}
   c_add(tag, style, parrent, event, text) {
     var param = "";
-    var buf = "";
 
-    for (let i = 0; i < tag.length; i++) {
-      if (tag[i] === " " || tag[i] === "{") {
-        if (tag[i] === " ") i++;
-        if (typeof tag[i] === "undefined") break;
-        for (i; i < tag.length; i++) param += tag[i];
+    //Get tag and his param
+    tag = this.splitCommandParams(tag);
+    param = tag[1];
 
-        break;
+    var newTag = document.createElement(tag[0]);
 
-      } else {
-        buf += tag[i];
+    if (param !== "") {
+      param = this.splitParams(param);
+
+      for (let i = 0; i < param.length; i++) {
+        newTag.setAttribute(param[i][0], param[i][1]);
       }
+    } else {
+      newTag.setAttribute("id", this.uniqueId);
+      this.uniqueId++;
     }
-    console.log(buf);
-    console.log(param);
-    
-    
-    var newTag = document.createElement(buf);
+    param = "";
 
+    //Get parrent
+    parrent = this.splitCommandParams(parrent);
+    var oldParrent = this.getElement(parrent[1]);
+
+    if (isNull(oldParrent)) {
+      return false;
+    }
+
+
+    //Get style
+    newTag = this.getStyle(newTag, style);
+    newTag = this.getEvent(newTag, event);
+
+    //TODO: Доделать вставку событий и текста
+    console.log(newTag);
   }
 
   //add in ..sryle{}
@@ -670,7 +691,162 @@ class t_command {
 
   }
 
-  splitParamsAdd(line) {
+
+
+
+  getClassName(value) {
+    var clas = "";
+
+    let className = value.indexOf("class");
+    if (className > -1 && (value[className + 5] === " " || value[className + 5] === ":")) {
+      if (value[className + 5] === " ") className++;
+      className += 6;
+      let i = className;
+
+      for (i; i < value.length; i++) {
+        if (value[i] === ";") break;
+      }
+
+      className = value.substr(className, i - className);
+      clas += className.trim();
+    }
+    this.log.printf("class: " + className);
+
+    return clas;
+  }
+
+  getElement(findBy) {
+    var by = "";
+    var elem = "";
+    var index = "";
+
+    for (let i = 0; i < findBy.length; i++) {
+      if (findBy[i] !== ":") by += findBy[i];
+      else {
+        elem = findBy.substr(i + 1, findBy.length - i);
+        break;
+      }
+    }
+
+    by = by.trim();
+    elem = elem.trim();
+
+    for (let i = 0; i < elem.length; i++) {
+      if (elem[i] === " ") {
+        index = elem.substr(i + 1, elem.length - i);
+        elem = elem.substr(0, i);
+        break;
+      }
+    }
+    index = parseInt(index);
+    if (isNaN(index))
+      index = 0;
+
+    switch (by.toLowerCase()) {
+      case "bytag":
+        findBy = document.getElementsByTagName(elem)[index];
+        break;
+      case "byclass":
+        findBy = document.getElementsByClassName(elem)[index];
+        break;
+      case "byid":
+        findBy = document.getElementById(elem);
+        break;
+      case "byname":
+        findBy = document.getElementsByName(elem)[index];
+        break;
+      default:
+        this.log.throw("There is no possibility of search on " + by);
+        return null;
+    }
+
+    if (typeof findBy === "undefined") {
+      this.log.throw("There is no possibility of search, \"body\" will be by default used");
+      findBy = document.getElementsByTagName("body")[0];
+    }
+
+    this.log.printf(elem);
+    this.log.printf(by);
+    this.log.printf(index);
+    return findBy;
+  }
+
+  getStyle(elem, style) {
+    var buf = "";
+    var param = "";
+    if (style.length > 0) {
+      style = this.splitCommandParams(style);
+      buf = style[0];
+      param = style[1];
+
+      elem.className += " " + this.getClassName(param);
+      elem.style.cssText = param;
+    }
+
+    this.log.printf(buf + "\t " + param);
+    return elem;
+  }
+
+  getEvent(elem, event) {
+    if (event.length < 1) return;
+
+    event = event.trim();
+    var param = "";
+
+    //console.log(event);
+
+    param = this.splitFuncs(event);
+    //TODo разобраться с ивентами
+    /*  console.log("------------------------");
+      console.log(param);
+      console.log("------------------------");*/
+
+    return elem;
+  }
+
+
+
+
+  makeFunc(value) {
+    return value;
+  }
+
+
+
+
+  splitParams(value) {
+    var buf = "";
+    var arr = [];
+
+    for (let i = 0; i < value.length; i++) {
+      let ar = [];
+      if (value[i] === ":") {
+        ar.push(buf);
+        buf = "";
+        for (i++; i < value.length; i++) {
+          if (value[i] !== ",") {
+            buf += value[i];
+          } else break;
+        }
+        ar.push(buf);
+        arr.push(ar);
+        buf = "";
+      } else buf += value[i];
+    }
+    for (let i = 0; i < arr.length; i++) {
+      for (let j = 0; j < arr[i].length; j++) {
+        if (arr[i][j] === "" || arr[i][j] === " ") {
+          arr[i].slice(i, 1);
+        } else {
+          arr[i][j] = arr[i][j].replace(/\s+/g, "");
+        }
+      }
+    }
+
+    return arr;
+  }
+
+  splitLineParams(line) {
     var len = line.length;
     var arr = [];
     var buf = "";
@@ -736,32 +912,104 @@ class t_command {
     return arr;
   }
 
-  splitParamsFunc(line) {
-    var arr = [];
+  splitCommandParams(value) {
     var buf = "";
-    var i = 0;
-    //func lala (pipka) { main body pinas }
-    var lp = 0,
-      rp = 0;
+    var param = "";
+    var arr = [];
 
-    for (i = 0; i < line.length; i++) {
+    for (let i = 0; i < value.length; i++) {
+      if (value[i] === " " || value[i] === "{") {
+        if (value[i] === " ") i++;
+        if (typeof value[i] === "undefined") break;
+        for (i; i < value.length; i++) {
+          if (value[i] !== "{" && value[i] !== "}")
+            param += value[i];
+        }
+        break;
 
+      } else {
+        buf += value[i];
+      }
     }
+
+    arr.push(buf);
+    arr.push(param);
     return arr;
   }
 
-  findElem(findBy) {
+  splitFuncs(value) {
+    var arr = [];
+    var buf = "";
+    var param = "";
 
+
+    param = value.substr(value.indexOf("{") + 1, value.length - value.indexOf("{") - 2).trim();
+
+    for (let i = 0; i < param.length; i++) {
+      if (param[i] === ":") {
+        i++;
+        let a = 0;
+        let ar = [];
+
+        buf = buf.substr(0, i).trim();
+        ar.push(buf);
+
+        buf = "";
+
+        if (param[i] === "{") {
+          i += 1;
+          a++;
+        } else if (param[i + 1] === "{") {
+          i += 2;
+          a++;
+        }
+
+
+        if (a > 0) {
+          for (i; a > 0; i++) {
+            if (i >= param.length) break;
+            if (param[i] === "{") a++;
+            if (param[i] === "}") a--;
+            if (a === 0) break;
+            buf += param[i];
+          }
+        } else {
+          for (i; i < param.length; i++) {
+            if (param[i] !== ";") buf += param[i];
+            else break;
+          }
+        }
+
+        if (param[i + 1] === ";") i += 2;
+        else if (param[i + 2] === ";") i += 3;
+
+
+        buf = buf.trim();
+        ar.push(buf);
+        arr.push(ar);
+
+        buf = "";
+      } else buf += param[i];
+    }
+
+    this.log.printf(arr);
+    this.log.printf(bufArr);
+    this.log.printf(param);
+
+    return arr;
   }
 
-  //add p style{color:white,  width:  10px,  class:font-horizon  clickable}
-  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body} 
-  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body!} 
-  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body} event {click:test_SayHello} text{hello my pinas}
-  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body} event {click:{alert("hi")}} text{hello my pinas}
-  //add input{type:text}  style {color:white,  width:  10px,  class:font-horizon  clickable} parrent{byTag:body}  event {click:{alert("hi")}}
-  //add in{byTag:body} style {color:white,  width:  10px,  class:font-horizon  clickable}
-  //add in{byTag:body} style {color:white,  width:  10px,  class:font-horizon  clickable} event {click:{alert("hi")}} text{hello my pinas}
+
+
+
+  //add p style{color:white;  width:  10px;  class:font-horizon  clickable}
+  //add input{type:text}  style {color:white;  width:  10px;  class:font-horizon  clickable} parrent{byTag:body} 
+  //add input{type:text}  style {color:white;  width:  10px;  class:font-horizon  clickable} parrent{byTag:body!} 
+  //add input{type:text}  style {color:white;  width:  10px;  class:font-horizon  clickable} parrent{byTag:body} event {click:test_SayHello()} text{hello my pinas}
+  //add input{type:text}  style {color:white;  width:  10px;  class:font-horizon  clickable} parrent{byTag:body} event {click:{alert("hi")}} text{hello my pinas}
+  //add div{id:123, name : 333} style {color:white;  width:  10px;  class:font-horizon  clickable; background: white} parrent{byTag:body} event {click:{alert("hi")}; dblclick:test_SayHello()} text{hello my pinas}
+  //add in{byTag:body} style {color:white;  width:  10px;  class:font-horizon  clickable}
+  //add in{byTag:body} style {color:white;  width:  10px;  class:font-horizon  clickable} event {click:{alert("hi")}} text{hello my pinas}
   add(line) {
     var bufLine = "";
     var bufStr = "";
@@ -786,7 +1034,7 @@ class t_command {
       return false;
     }
 
-    params = this.splitParamsAdd(bufLine);
+    params = this.splitLineParams(bufLine);
     for (let i = 0; i < params.length; i++) {
 
       for (let j = 0; j < params[i].length; j++) {
@@ -875,12 +1123,12 @@ class t_command {
         findBy = "";
       }
       if (parrent.length === 0) {
-        this.log.throw("Еhere is no parent. \"body\" will be by default established");
-        parrent = "body";
+        this.log.throw("There is no parent. \"body\" will be by default established");
+        parrent = "parrent{byTag: body}";
       }
       this.c_add(tag, style, parrent, event, text);
-      return true;
 
+      return true;
     }
   }
 
@@ -917,13 +1165,6 @@ class t_command {
 
 class t_server {
 
-  constructor() {
-
-  }
-
-  _get(command) {
-
-  }
-
-
+  constructor() {}
+  _get(command) {}
 };
