@@ -491,6 +491,7 @@ class t_console_log {
 };
 
 
+//TODO: добавить метод set style
 /**
  * 
  * add
@@ -761,6 +762,10 @@ class t_command {
     //console.log(findBy);
   }
 
+  //TODO сделать удалить event
+  //del in{byTag:div 1} event{click}
+  //del in{byTag:div 1} event{click, dblclick}
+  //del in{byTag:div 1} style{background; className: clickable font-horizon} event{click, dblclick}
   c_del_event(findBy, event) {
     //removeEventListener
     //elem.removeEventListener(param[i][0], f, false);
@@ -804,6 +809,7 @@ class t_command {
   }
 
 
+
   unSetStyle(elem, style) {
 
     if (style === "style") {
@@ -811,32 +817,86 @@ class t_command {
       return elem;
     }
 
-    var buf = "";
-    var param = "";
-
-    console.log(style);
-
     if (style.length > 0) {
       let oldStyles = this.splitCommandParams("style{" + elem.style.cssText + "}");
       style = this.splitCommandParams(style);
-
-      let yetClass = style[1];
-      let oldClass = oldStyles[1];
-
+     
+      let styleClassName = this.getClassName(style[1]);
+ 
       oldStyles = this.splitParamsDetail(oldStyles[1], ";");
       style = this.splitParamsDetail(style[1], ";");
 
-      console.log(style);
-      console.log(oldStyles);
+      //deletes sublines {string} v  from line {string} l
+      var f1 = function (v, l) {
+        if (typeof l === "undefined") return v;
 
+        let c = "";
+        if (v.indexOf(l) > -1) {
+          c = v.replace(l, "");      
+          return c.trim();
+        } 
 
-      elem.className += " " + this.getClassName(yetClass);
-      elem.style.cssText = param;
+        if (v.indexOf(" ") > -1) {
+         
+          let buf1 = v.split(" ");
+          let buf2 = l.split(" ");
+
+          for (let i = 0; i < buf1.length; i++) {
+            for (let j = 0; j < buf2.length; j++) {
+              if (buf1[i] === buf2[j]) {
+                buf1.splice(i, 1);
+                i--;
+              }
+            }
+          }
+
+          c = buf1.join(" ");
+        } else return v;
+        
+        return c;
+      };
+
+      var f2 = function (arr, l) {
+
+        let c = "";
+        for (let i = 0; i < arr.length; i++) {
+          if (Array.isArray(arr[i])) {
+            c += f2(arr[i], ":") + l;
+          } else {
+            c += arr[i];
+            if (i < arr.length - 1) c += l; 
+          }
+        }
+      
+        return c;
+      };
+
+      for(let i = oldStyles.length - 1; i > -1; i--) {
+        for(let j = style.length - 1; j > -1; j--) {
+          if (oldStyles[i][0] === style[j][0]) {
+            if (typeof style[j][1] === "undefined" || style[j][1] === "" ) {
+              oldStyles.splice(i, 1);
+            } else {
+              oldStyles[i][1] = f1(oldStyles[i][1], style[j][1]);
+            }
+          }
+        }
+      }
+
+      this.log.printf(elem.style.cssText);
+      elem.style.cssText = f2(oldStyles, ";");
+      this.log.printf(elem.style.cssText);
+      
+      this.log.printf(elem.className);
+      this.log.printf(styleClassName);
+      elem.className = f1(elem.className.trim(), styleClassName)
+      this.log.printf(elem.className);
     }
 
     return elem;
   }
 
+  
 
   setStyle(elem, style) {
 
@@ -980,6 +1040,21 @@ class t_command {
 
       className = value.substr(className, i - className);
       clas += className.trim();
+    } else {
+      
+        className = value.indexOf("className");
+        if (className > -1 && (value[className + 95] === " " || value[className + 9] === ":")) {
+          if (value[className + 9] === " ") className++;
+          className += 10;
+          let i = className;
+    
+          for (i; i < value.length; i++) {
+            if (value[i] === ";") break;
+          }
+    
+          className = value.substr(className, i - className);
+          clas += className.trim();
+      }
     }
     this.log.printf("class: " + className);
 
@@ -1211,12 +1286,48 @@ class t_command {
     return arr;
   }
 
-  splitParamsDetail(value) {
-    //TODO скопировать из splitParams код и переделать для del_style
+  splitParamsDetail(value, on) {
+    
+    var buf = "";
+    var arr = [];
+
+    for (let i = 0; i < value.length; i++) {
+      let ar = [];
+      if (value[i] === ":") {
+        ar.push(buf);
+        buf = "";
+        for (i++; i < value.length; i++) {
+          if (value[i] !== on) {
+            buf += value[i];
+          } else break;
+        }
+        ar.push(buf);
+        arr.push(ar);
+        buf = "";
+      } else {
+        if (value[i] === on) {
+          ar.push(buf);
+          arr.push(ar);
+          buf = "";
+        } else buf += value[i];
+      }
+    }
+
+    for (let i = 0; i < arr.length; i++) {
+      for (let j = 0; j < arr[i].length; j++) {
+        if (arr[i][j] === "" || arr[i][j] === " ") {
+          arr[i].slice(i, 1);
+        } else {
+          arr[i][j] = arr[i][j].replace(/\s+/g, " ").trim();
+        }
+      }
+    }
+
+    return arr;
   }
 
 
-
+  //add new style-name{}
   //add p style{color:white;  width:  10px;  class:font-horizon  clickable}
   //add input{type:text}  style {color:white;  width:  10px;  class:font-horizon  clickable} parrent{byTag:body} 
   //add input{type:text}  style {color:white;  width:  10px;  class:font-horizon  clickable} parrent{byTag:body!} 

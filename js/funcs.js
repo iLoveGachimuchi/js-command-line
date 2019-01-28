@@ -1,5 +1,5 @@
 /**
- * Function removes variable type in console.
+ * Removes variable types in the console
  * @param  {any} value - Variable of semi-couples any types of data.
  */
 function varDump(value) {
@@ -25,8 +25,49 @@ function varDump(value) {
   return;
 }
 
+/**
+ * Deletes sublines {string} v  from line {string} l
+ * @param {string} v - value from which will be similar words will be removed
+ * @param {string} l - from which value will be will be removed from the first value
+ */
+function cutSubline(v, l) {
 
+  if (l === "undefined") {
+    return v;
+  }
 
+  let c = "";
+
+  if (v.indexOf(l) > -1) {
+    c = v.replace(l, "");
+    return c.trim();
+  }
+
+  if (v.indexOf(" ") > -1) {
+    v += " ";
+    if (l.indexOf(" ") > -1)
+      l += " ";
+
+    let buf1 = v.split(" ");
+    let buf2 = l.split(" ");
+
+    for (let i = 0; i < buf1.length; i++) {
+      for (let j = 0; j < buf2.length; j++) {
+        if (buf1[i] === buf2[j]) {
+          buf1.splice(i, 1);
+        }
+      }
+    }
+
+    c = buf1.join(" ");
+  } else return v;
+  return c;
+}
+
+/**
+ * Deletes spaces if > 1
+ * @param {string} value 
+ */
 function removeSpace(value) {
   //value = value.replace(/\s+/g, "  ").trim();
   value = value.split(/\s* \s*/);
@@ -40,6 +81,25 @@ function removeSpace(value) {
   return tm.join(" ");
 }
 
+/**
+ * The array will transform to a string, including its investments
+ * @param {Array} arr 
+ * @param {String} l - separator
+ */
+function atos(arr, l) {
+
+  let c = "";
+  for (let i = 0; i < arr.length; i++) {
+    if (Array.isArray(arr[i])) {
+      c += atos(arr[i], l) + l;
+    } else {
+      c += arr[i];
+      if (i < arr.length - 1) c += l;
+    }
+  }
+
+  return c;
+}
 
 Object.prototype.isEmpty = function () {
   for (var key in this) {
@@ -58,6 +118,7 @@ Object.size = function (obj) {
   }
   return size;
 };
+
 
 
 

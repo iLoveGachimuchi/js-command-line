@@ -43,8 +43,8 @@ window.onload = function () {
   setOnClickFunction(getElementOnClick, "clickable");
 }
 
-cmd.c("add div style {color:white;  width:  100px;   height: 20px;class:font-horizon  clickable; background: white} parrent{byTag:body 0}");
-cmd.c("add div style {color:white;  width:  120px;   height: 20px;class:font-horizon  clickable; background: white} parrent{byTag:body 0}");
+cmd.c("add div style {color:white;  width:  100px;   height: 20px;class:font-horizon  clickable font-size-69; background: white} parrent{byTag:body 0}");
+cmd.c("add div style {color:white;  width:  120px;   height: 20px;class:font-horizon  clickable font-size-69; background: white} parrent{byTag:body 0}");
 cmd.c("add div style {color:white;  width:  130px;   height: 20px;class:font-horizon  clickable; background: white} parrent{byTag:body 0}");
 cmd.c("add div style {color:white;  width:  140px;   height: 20px;class:font-horizon  clickable; background: white} parrent{byTag:body 0}");
 /*
