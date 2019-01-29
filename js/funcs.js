@@ -288,3 +288,126 @@ function toArray(obj) {
     arr.push(obj[i]);
   return arr;
 }
+
+
+function drawWaves() {
+
+  var canvas = document.createElement("canvas");
+  canvas.id = 'canvas';
+  canvas.width = 800;
+  canvas.height = 800;
+  document.body.appendChild(canvas);
+
+  var img = new Image();
+  img.onload = function () {
+    drawImageInPerspective(
+      img, canvas,
+      50, 50, //top left corner: x, y
+      50, 300, //bottom left corner: x, y - position it 50px more to the right than the top right corner
+      300, 50, //top right corner: x, y - position it 50px below the top left corner 
+      300, 300, //bottom right corner: x,y
+      false, //don't flip the original image horizontally
+      false //don't flip the original image vertically
+    );
+  }
+  img.src = "cs.png";
+
+}
+
+function drawImageInPerspective(
+  srcImg,
+  targetCanvas,
+  topLeftX, topLeftY,
+  bottomLeftX, bottomLeftY,
+  topRightX, topRightY,
+  bottomRightX, bottomRightY,
+   flipHorizontally,
+  flipVertically
+) {
+
+  var srcWidth = srcImg.naturalWidth;
+  var srcHeight = srcImg.naturalHeight;
+
+  var targetMarginX = Math.min(topLeftX, bottomLeftX, topRightX, bottomRightX);
+  var targetMarginY = Math.min(topLeftY, bottomLeftY, topRightY, bottomRightY);
+
+  var targetTopWidth = (topRightX - topLeftX);
+  var targetTopOffset = topLeftX - targetMarginX;
+  var targetBottomWidth = (bottomRightX - bottomLeftX);
+  var targetBottomOffset = bottomLeftX - targetMarginX;
+
+  var targetLeftHeight = (bottomLeftY - topLeftY);
+  var targetLeftOffset = topLeftY - targetMarginY;
+  var targetRightHeight = (bottomRightY - topRightY);
+  var targetRightOffset = topRightY - targetMarginY;
+
+  var tmpWidth = Math.max(targetTopWidth + targetTopOffset, targetBottomWidth + targetBottomOffset);
+  var tmpHeight = Math.max(targetLeftHeight + targetLeftOffset, targetRightHeight + targetRightOffset);
+
+  var tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = tmpWidth;
+  tmpCanvas.height = tmpHeight;
+  var tmpContext = tmpCanvas.getContext('2d');
+
+  tmpContext.translate(
+    flipHorizontally ? tmpWidth : 0,
+    flipVertically ? tmpHeight : 0
+  );
+  tmpContext.scale(
+    (flipHorizontally ? -1 : 1) * (tmpWidth / srcWidth),
+    (flipVertically ? -1 : 1) * (tmpHeight / srcHeight)
+  );
+
+  tmpContext.drawImage(srcImg, 0, 0);
+
+  var tmpMap = tmpContext.getImageData(0, 0, tmpWidth, tmpHeight);
+  var tmpImgData = tmpMap.data;
+
+  var targetContext = targetCanvas.getContext('2d');
+  var targetMap = targetContext.getImageData(targetMarginX, targetMarginY, tmpWidth, tmpHeight);
+  var targetImgData = targetMap.data;
+
+  var tmpX, tmpY,
+    targetX, targetY,
+    tmpPoint, targetPoint;
+
+  for (var tmpY = 0; tmpY < tmpHeight; tmpY++) {
+    for (var tmpX = 0; tmpX < tmpWidth; tmpX++) {
+
+       tmpPoint = (tmpY * tmpWidth + tmpX) * 4;
+      targetX = (
+          targetTopOffset +
+          targetTopWidth * tmpX / tmpWidth
+        ) *
+        (1 - tmpY / tmpHeight) +
+        (
+          targetBottomOffset +
+          targetBottomWidth * tmpX / tmpWidth
+        ) *
+        (tmpY / tmpHeight);
+      targetX = Math.round(targetX);
+
+
+      targetY = (
+          targetLeftOffset +
+          targetLeftHeight * tmpY / tmpHeight
+        ) *
+        (1 - tmpX / tmpWidth) +
+        (
+          targetRightOffset +
+          targetRightHeight * tmpY / tmpHeight
+        ) *
+        (tmpX / tmpWidth);
+      targetY = Math.round(targetY);
+
+      targetPoint = (targetY * tmpWidth + targetX) * 4;
+
+      targetImgData[targetPoint] = tmpImgData[tmpPoint]; //red
+      targetImgData[targetPoint + 1] = tmpImgData[tmpPoint + 1]; //green
+      targetImgData[targetPoint + 2] = tmpImgData[tmpPoint + 2]; //blue
+      targetImgData[targetPoint + 3] = tmpImgData[tmpPoint + 3]; //alpha
+    }
+  }
+
+  targetContext.putImageData(targetMap, targetMarginX, targetMarginY);
+}

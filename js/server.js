@@ -57,41 +57,16 @@ var t_console_button_style = {
 };
 
 
+
 var t_command_com = ["add", "del", "change", "server", "func", "load"];
 var t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load"];
-var t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section", "td", "th", "title", "a", "header", "footer"];
+var t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section",
+  "td", "th", "title", "a", "header", "footer", "canvas", "svg", "defs", "filter", "feGaussianBlur", "feColorMatrix",
+  "feColorMatrix", "feOffset", "feComposite", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8"
+];
 var t_command_param = ["type", "src", "image", "name", "id", "text", "value"];
 var t_command_params = ["style", "parrent", "text", "in"];
 
-
-var t_command_funcs = {
-  test_FontsShow: test_FontsShow
-};
-
-var t_command_struct = {
-  action: "",
-  firstParam: "",
-  secondParam: "",
-  thirdParam: "",
-  fourthParam: "",
-  fithParam: "",
-  sixthParam: "",
-  parrent: "",
-  text: "",
-};
-
-var t_command_struct_add = {
-  tag: "",
-  style: "",
-  parrent: "",
-  event: "",
-  param: "",
-  text: ""
-};
-var t_command_struct_del = {};
-var t_command_struct_change = {};
-var t_command_struct_new = {};
-var t_command_struct_func = {};
 
 
 /**
@@ -241,7 +216,7 @@ class t_dragManager {
     var parent = document.getElementsByTagName("body");
     parent = parent[0];
 
-    for (i = 0; i < arrayTotal.length; i++) {
+    for (let i = 0; i < arrayTotal.length; i++) {
       if (arrayTotal[i].tagName === "DIV" && arrayTotal[i] !== elem) {
 
         elemParrent = getPosAndSize(arrayTotal[i]);
@@ -358,6 +333,7 @@ class t_keyHook {
 class t_console {
 
   constructor(cmd) {
+    this.hidden = false;
     this.cmd = cmd;
 
     this.console_style = t_console_style;
@@ -397,6 +373,8 @@ class t_console {
     this.div.appendChild(this.textarea);
     this.div.appendChild(this.button);
     obj_parent.appendChild(this.div);
+
+    if (this.hidden) this.hideConsole();
   }
 
   feelStyles() {
@@ -491,19 +469,7 @@ class t_console_log {
 };
 
 
-//TODO: добавить метод set style
-/**
- * 
- * add
- * tag /input{type:text, src:src/2}
- * style{param1: "", param2: "", ClassName: ""/class: ""}
- * parrent
- * "event":""
- * text
- * 
- * del
- * ""
- */
+
 class t_command {
 
   constructor(server) {
@@ -567,6 +533,7 @@ class t_command {
         r = this.del(line);
         break;
       case "change":
+        r = this.change(line);
         break;
       case "load":
         break;
@@ -574,7 +541,10 @@ class t_command {
         break;
       case "server":
         break;
-      case "c":
+      case "new":
+        r = this._new(line);
+        break;
+      case "run":
         break;
       default:
         this.log.throw("Unknown command in " + arr[0]);
@@ -657,13 +627,7 @@ class t_command {
   //add in{byid:123} style {color:white;  width:  10px;  height: 100px; background: black}
   c_add_style(findBy, style) {
 
-    findBy = this.splitCommandParams(findBy);
-    findBy = this.getElement(findBy[1]);
-
-    if (isNull(findBy)) {
-      this.log.throw("There is no possibility of search, \"body\" will be by default used");
-      findBy = document.getElementsByTagName("body")[0];
-    }
+    findBy = this.collectElement(findBy);
 
     if (Array.isArray(findBy)) {
       for (let i = 0; i < findBy.length; i++)
@@ -679,13 +643,7 @@ class t_command {
   //add in{byid:123} event {dblclick:{alert("mark")}} text{hello my pinas}
   c_add_event(findBy, event) {
 
-    findBy = this.splitCommandParams(findBy);
-    findBy = this.getElement(findBy[1]);
-
-    if (isNull(findBy)) {
-      this.log.throw("There is no possibility of search, \"body\" will be by default used");
-      findBy = document.getElementsByTagName("body")[0];
-    }
+    findBy = this.collectElement(findBy);
 
     if (Array.isArray(findBy)) {
       for (let i = 0; i < findBy.length; i++)
@@ -700,13 +658,7 @@ class t_command {
   c_add_text(findBy, text) {
 
     text = this.splitCommandParams(text)[1];
-    findBy = this.splitCommandParams(findBy);
-    findBy = this.getElement(findBy[1]);
-
-    if (isNull(findBy)) {
-      this.log.throw("There is no possibility of search, \"body\" will be by default used");
-      findBy = document.getElementsByTagName("body")[0];
-    }
+    findBy = this.collectElement(findBy);
 
     if (Array.isArray(findBy)) {
       for (let i = 0; i < findBy.length; i++)
@@ -722,13 +674,7 @@ class t_command {
   //del in {byTag:div *}
   c_del(findBy) {
 
-    findBy = this.splitCommandParams(findBy);
-    findBy = this.getElement(findBy[1]);
-
-    if (isNull(findBy)) {
-      this.log.throw("There is no possibility of search, \"body\" will be by default used");
-      findBy = document.getElementsByTagName("body")[0];
-    }
+    findBy = this.collectElement(findBy);
 
     if (Array.isArray(findBy)) {
       for (let i = 0; i < findBy.length; i++)
@@ -744,41 +690,44 @@ class t_command {
   //del in{byTag:div *} style{background: white; className: clickable}
   c_del_style(findBy, style) {
 
-    findBy = this.splitCommandParams(findBy);
-    findBy = this.getElement(findBy[1]);
+    findBy = this.collectElement(findBy);
 
-    if (isNull(findBy)) {
-      this.log.throw("There is no possibility of search, \"body\" will be by default used");
-      findBy = document.getElementsByTagName("body")[0];
-    }
-
-    //console.log(findBy);
     if (Array.isArray(findBy)) {
       for (let i = 0; i < findBy.length; i++)
         findBy[i] = this.unSetStyle(findBy[i], style);
     } else {
       findBy = this.unSetStyle(findBy, style);
     }
-    //console.log(findBy);
+
   }
 
-  //TODO сделать удалить event
   //del in{byTag:div 1} event{click}
   //del in{byTag:div 1} event{click, dblclick}
   //del in{byTag:div 1} style{background; className: clickable font-horizon} event{click, dblclick}
   c_del_event(findBy, event) {
-    //removeEventListener
-    //elem.removeEventListener(param[i][0], f, false);
+
+    findBy = this.collectElement(findBy);
+
+    event = this.splitCommandParams(event);
+    event = event[1].replace(";", ",");
+    event = event.split(",");
+    findBy = this.removeEvent(findBy, event);
+
   }
 
   c_del_text(findBy, text) {
-
+    findBy = this.collectElement(findBy);
+    findBy.innerHTML = "";
   }
 
 
 
-  c_change_style(findBy, style) {
+  c_change (findBy, tag) {
+    findBy = this.collectElement(findBy);
+  }
 
+  c_change_style(findBy, style) {
+    findBy = this.collectElement(findBy);
   }
 
   c_change_event(findBy, event) {
@@ -795,16 +744,6 @@ class t_command {
   }
 
   c_new_func(func) {
-    //https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Global_Objects/eval
-    // var obj = {
-    //   hello: "World",
-    //   sayHello: (function () {
-    //     console.log("I say Hello!");
-    //   }).toString()
-    // };
-    // var myobj = JSON.parse(JSON.stringify(obj));
-    // myobj.sayHello = new Function("return (" + myobj.sayHello + ")")();
-    // myobj.sayHello();
 
   }
 
@@ -820,9 +759,9 @@ class t_command {
     if (style.length > 0) {
       let oldStyles = this.splitCommandParams("style{" + elem.style.cssText + "}");
       style = this.splitCommandParams(style);
-     
+
       let styleClassName = this.getClassName(style[1]);
- 
+
       oldStyles = this.splitParamsDetail(oldStyles[1], ";");
       style = this.splitParamsDetail(style[1], ";");
 
@@ -832,12 +771,12 @@ class t_command {
 
         let c = "";
         if (v.indexOf(l) > -1) {
-          c = v.replace(l, "");      
+          c = v.replace(l, "");
           return c.trim();
-        } 
+        }
 
         if (v.indexOf(" ") > -1) {
-         
+
           let buf1 = v.split(" ");
           let buf2 = l.split(" ");
 
@@ -852,7 +791,7 @@ class t_command {
 
           c = buf1.join(" ");
         } else return v;
-        
+
         return c;
       };
 
@@ -864,17 +803,17 @@ class t_command {
             c += f2(arr[i], ":") + l;
           } else {
             c += arr[i];
-            if (i < arr.length - 1) c += l; 
+            if (i < arr.length - 1) c += l;
           }
         }
-      
+
         return c;
       };
 
-      for(let i = oldStyles.length - 1; i > -1; i--) {
-        for(let j = style.length - 1; j > -1; j--) {
+      for (let i = oldStyles.length - 1; i > -1; i--) {
+        for (let j = style.length - 1; j > -1; j--) {
           if (oldStyles[i][0] === style[j][0]) {
-            if (typeof style[j][1] === "undefined" || style[j][1] === "" ) {
+            if (typeof style[j][1] === "undefined" || style[j][1] === "") {
               oldStyles.splice(i, 1);
             } else {
               oldStyles[i][1] = f1(oldStyles[i][1], style[j][1]);
@@ -886,7 +825,7 @@ class t_command {
       this.log.printf(elem.style.cssText);
       elem.style.cssText = f2(oldStyles, ";");
       this.log.printf(elem.style.cssText);
-      
+
       this.log.printf(elem.className);
       this.log.printf(styleClassName);
       elem.className = f1(elem.className.trim(), styleClassName)
@@ -896,7 +835,7 @@ class t_command {
     return elem;
   }
 
-  
+
 
   setStyle(elem, style) {
 
@@ -929,6 +868,7 @@ class t_command {
     var param = this.splitFuncs(event.trim());
 
     for (let i = 0; i < param.length; i++) {
+
       function f(e) {
         eval(param[i][1]);
       };
@@ -942,15 +882,16 @@ class t_command {
           }
         }
         if (once)
-          elem.addEventListener(param[i][0], f, false);
+          elem.addEventListener(param[i][0], f, true);
 
       } else {
         this.eventListenerOnce.push({
           e: elem.id,
           s: param[i][0],
-          f: param[i][1]
+          f: param[i][1],
+          fn: f
         });
-        elem.addEventListener(param[i][0], f, false);
+        elem.addEventListener(param[i][0], f, true);
       }
     }
 
@@ -959,6 +900,18 @@ class t_command {
   }
 
 
+
+  collectElement(findBy) {
+    findBy = this.splitCommandParams(findBy);
+    findBy = this.getElement(findBy[1]);
+
+    if (isNull(findBy)) {
+      this.log.throw("There is no possibility of search, \"body\" will be by default used");
+      findBy = document.getElementsByTagName("body")[0];
+    }
+
+    return findBy;
+  }
 
   //findBy
   getElement(findBy) {
@@ -1041,19 +994,19 @@ class t_command {
       className = value.substr(className, i - className);
       clas += className.trim();
     } else {
-      
-        className = value.indexOf("className");
-        if (className > -1 && (value[className + 95] === " " || value[className + 9] === ":")) {
-          if (value[className + 9] === " ") className++;
-          className += 10;
-          let i = className;
-    
-          for (i; i < value.length; i++) {
-            if (value[i] === ";") break;
-          }
-    
-          className = value.substr(className, i - className);
-          clas += className.trim();
+
+      className = value.indexOf("className");
+      if (className > -1 && (value[className + 95] === " " || value[className + 9] === ":")) {
+        if (value[className + 9] === " ") className++;
+        className += 10;
+        let i = className;
+
+        for (i; i < value.length; i++) {
+          if (value[i] === ";") break;
+        }
+
+        className = value.substr(className, i - className);
+        clas += className.trim();
       }
     }
     this.log.printf("class: " + className);
@@ -1064,7 +1017,7 @@ class t_command {
 
 
   splitParams(value, on) {
-  
+
     var buf = "";
     var arr = [];
 
@@ -1168,7 +1121,7 @@ class t_command {
 
     line += " ";
 
-    var f = () => {
+    var f = (i) => {
       for (i; i < line.length; i++) {
         if (line[i] === "}") {
           break;
@@ -1176,15 +1129,15 @@ class t_command {
       }
     }
 
-    for (i = 0; i < line.length; i++) {
+    for (let i = 0; i < line.length; i++) {
 
       if (line[i] === " " || line[i] === "{") {
 
         if (this.isParams(buf) || buf === "event") {
           if (line[i] === " ") {
-            if (line[i + 1] === "{") f();
+            if (line[i + 1] === "{") f(i);
           } else {
-            if (line[i] === "{") f();
+            if (line[i] === "{") f(i);
           }
           arr.push(buf.trim());
         }
@@ -1287,7 +1240,7 @@ class t_command {
   }
 
   splitParamsDetail(value, on) {
-    
+
     var buf = "";
     var arr = [];
 
@@ -1324,6 +1277,124 @@ class t_command {
     }
 
     return arr;
+  }
+
+
+
+  removeEvent(elem, event) {
+
+    var pastElem = [];
+
+    var f1 = (el, ev) => {
+      switch (ev.trim()) {
+        case "click":
+          el.click = null;
+          break;
+        case "mouseDown":
+          el.mouseDown = null;
+          break;
+        case "blur":
+          el.blur = null;
+          break;
+        case "focus":
+          el.focus = null;
+          break;
+        case "change":
+          el.change = null;
+          break;
+        case "dblclick":
+          el.dblclick = null;
+          break;
+        case "keydown":
+          el.keydown = null;
+          break;
+        case "keypress":
+          el.keypress = null;
+          break;
+        case "keyup":
+          el.keyup = null;
+          break;
+        case "load":
+          el.load = null;
+          break;
+      }
+      return el;
+    };
+
+    var f2 = (el, ev) => {
+      for (let j = 0; j < ev.length; j++)
+        el = f1(el, ev[j]);
+      return el;
+    };
+
+    var f3 = (el, arr) => {
+      for (let i = 0; i < this.eventListenerOnce.length; i++) {
+        if (el.id === this.eventListenerOnce[i].e) {
+          arr.push(this.eventListenerOnce[i]);
+        }
+      }
+      return arr;
+    };
+
+    var f4 = (el, arr, ev) => {
+      ev = ev.trim();
+      el = f1(el, ev);
+      if (arr.length > 0) {
+        for (let i = 0; i < arr.length; i++) {
+          if (ev === arr[i].s) {
+            el.removeEventListener(arr[i].s, arr[i].fn, true);
+          }
+        }
+      }
+      return el;
+    };
+
+    var f5 = (el, arr, ev) => {
+      el = f2(el, ev);
+      for (let j = 0; j < ev.length; j++) 
+        el = f4(el, arr, ev[j]);
+      
+      return el;
+    }
+    
+
+    if (HTMLCollection.prototype.isPrototypeOf(elem)) {
+
+      if (this.eventListenerOnce.length > 0) 
+        for (let i = 0; i < elem.length; i++) 
+          pastElem = f3(elem[i], pastElem);
+
+      for (let i = 0; i < elem.length; i++) {
+        Array.isArray(event) ?
+          elem[i] = f5(elem[i], pastElem, event):
+          elem[i] = f4(elem[i], pastElem, event);
+        
+      }
+   
+    } else {
+      if (this.eventListenerOnce.length > 0) pastElem = f3(elem, pastElem);
+
+      Array.isArray(event) ?
+        elem = f5(elem, pastElem, event):
+        elem = f4(elem, pastElem, event);
+      
+      
+    }
+    
+
+    return elem;
+    /*
+    var buf = "";
+    for (let i = 0; i < t_command_events.length; i++) {
+      buf += "elem." + t_command_events[i] + " = null;";
+    }
+    console.log(buf);
+    var buf = "switch(ev){";
+    for (let i = 0; i < t_command_events.length; i++) {
+      buf += "case \"" +t_command_events[i]+ "\" :el." + t_command_events[i] + " = null; break;";
+    }
+    console.log(buf+"} return el;");
+    */
   }
 
 
@@ -1575,12 +1646,136 @@ class t_command {
   }
 
 
-  isEvent(value) {
-    for (let i = 0; i < t_command_events.length; i++) {
-      if (t_command_events[i] === value) return true;
+  //TODO тута доделать нудо по return
+  //change in{byTag:div 2} div{id: 228-tag; name: gabe} style{width: 400px; class: draggable} event {click:{alert("hi")}} text{hello my pinas}
+  change(line) {
+    var bufLine = "";
+    var params = [];
+
+    var tag = "";
+    var findBy = "";
+    var style = "";
+    var event = "";
+    var text = "";
+
+    for (let i = 0; i < line.length; i++)
+      if (line[i] === " ")
+        for (i++; i < line.length; i++)
+          bufLine += line[i];
+
+
+    var commands = this.splitCommand(bufLine);
+
+    if (bufLine === "") {
+      this.log.throw("There are no parameters in " + line);
+      return false;
     }
-    return false;
+
+    params = this.splitLineParams(bufLine);
+    for (let i = 0; i < params.length; i++) {
+
+      var bufStr = "";
+      for (let j = 0; j < params[i].length; j++) {
+        
+        if (this.isTag(bufStr)) {
+          if (params[i][j] === " " || params[i][j] === "{") {
+            tag = params[i];
+            bufStr = "";
+            break;
+          }
+        }
+        if (bufStr === "style") {
+          commands.splice(commands.indexOf(bufStr), 1);
+          style = params[i];
+          bufStr = "";
+          break;
+        }
+        if (bufStr === "event") {
+          commands.splice(commands.indexOf(bufStr), 1);
+          event = params[i];
+          bufStr = "";
+          break;
+        }
+        if (bufStr === "text") {
+          commands.splice(commands.indexOf(bufStr), 1);
+          text = params[i];
+          bufStr = "";
+          break;
+        }
+        if (bufStr === "in") {
+          if (params[i][j] === " " || params[i][j] === "{") {
+            commands.splice(commands.indexOf(bufStr), 1);
+            findBy = params[i];
+            bufStr = "";
+            break;
+          }
+        }
+        bufStr += params[i][j];
+      }
+
+    }
+
+
+    
+
+    console.log("tag: " + tag);
+    console.log("findBy: " + findBy);
+    console.log("style: " + style);
+    console.log("event: " + event);
+    console.log("text: " + text);
+
+    return;
+    if (findBy.length !== 0) {
+
+      let inc = 0;
+
+      if (style.length !== 0) {
+        this.c_del_style(findBy, style);
+        inc++;
+      }
+      if (event.length !== 0) {
+        this.c_del_event(findBy, event);
+        inc++;
+      }
+      if (text.length !== 0) {
+        this.c_del_text(findBy, text);
+        inc++;
+      }
+
+      if (inc === 0) {
+        this.c_del(findBy);
+      }
+      return true;
+
+    } else {
+
+      this.log.throw("There is no possibility of removal");
+      return false;
+    }
   }
+
+
+  //TODO тута будем 
+  //new style
+  _new(line) {
+    /*
+    var css = 'h1 { background: red; }',
+    head = document.head || document.getElementsByTagName('head')[0],
+    style = document.createElement('style');
+
+    style.type = 'text/css';
+    if (style.styleSheet){
+      // This is required for IE8 and below.
+      style.styleSheet.cssText = css;
+    } else {
+      style.appendChild(document.createTextNode(css));
+    }
+
+    head.appendChild(style);
+    */
+  }
+
+
 
   isTag(value) {
     for (let i = 0; i < t_command_tags.length; i++) {
