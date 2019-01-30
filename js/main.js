@@ -9,7 +9,7 @@ const tk = new t_keyHook;
 const dm = new t_dragManager;
 
 
-
+//cmd.sessionSave = true;
 tc.hidden = false;
 
 tc.draw("body");
