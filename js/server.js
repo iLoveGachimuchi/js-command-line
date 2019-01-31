@@ -1,17 +1,17 @@
 var test_FontsShow = function () {
-  return '<div class="voice-recorder font-size-18">\
-  <p class="font-horizon clickable">Im pinas</p>\
-  <p class="font-horizon_lines">Im pinas</p>\
-  <p class="font-horizon_linestwo">Im pinas</p>\
-  <p class="font-horizon_outline">Im pinas</p>\
-  <p class="font-horizon_outlinetwo">Im pinas</p>\
-  <p class="font-enzyme font-weight-900 clickable">Im pinas</p>\
-  <p class="font-axon">Im pinas</p>\
-  <p class="font-axon_light">Im pinas</p>\
-  <p class="font-axon_bold">Im pinas</p>\
-  <p class="font-axon_ultralight">Im pinas</p>\
-  <p class="font-corbel" onclick="test_thisElementByOnClick(this)">Im pinas</p>\
-</div>';
+  command("add div{id: t-1} style{class: voice-recorder font-size-18} parrent{byTag:body[0]}");
+  command("add p style{class: font-horizon} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-horizon_lines} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-horizon} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-horizon_linestwo} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-horizon_outline clickable} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-horizon_outlinetwo clickable} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-enzyme font-weight-900} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-axon clickable} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-axon_light clickable} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-axon_bold clickable} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-axon_ultralight clickable} parrent{byId:t-1} text{Im pinas}");
+  command("add p style{class: font-corbel} parrent{byId:t-1} text{Im pinas}");
 }
 
 function test_SayHello() {
@@ -57,15 +57,14 @@ var t_console_button_style = {
 };
 
 
-
-var t_command_com = ["add", "del", "change", "server", "func", "load"];
-var t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load"];
-var t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section",
+const t_command_com = ["add", "del", "change", "server", "func", "load"];
+const t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load"];
+const t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section",
   "td", "th", "title", "a", "header", "footer", "canvas", "svg", "defs", "filter", "feGaussianBlur", "feColorMatrix",
-  "feColorMatrix", "feOffset", "feComposite", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8"
+  "feColorMatrix", "feOffset", "feComposite", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "script"
 ];
-var t_command_param = ["type", "src", "image", "name", "id", "text", "value"];
-var t_command_params = ["style", "parent", "text", "in"];
+const t_command_param = ["type", "src", "image", "name", "id", "text", "value"];
+const t_command_params = ["style", "parent", "text", "in"];
 
 
 
@@ -495,24 +494,24 @@ class t_command {
     let fin = 0;
 
     for (let i = 0; i < 9999; i++) {
-      if (localStorage.getItem("session-key-" + i) !== null) 
+      if (localStorage.getItem("session-key-" + i) !== null)
         fin++;
       else break;
-      if(fin === 9999) return 0;
+      if (fin === 9999) return 0;
     }
     return fin;
   }
 
   restoreSession() {
     //localStorage.setItem("command-session-reload", 1);
-    
+
     if (localStorage.getItem("command-session-reload") == 1) {
       for (let i = 0; i < this.sessionUnuqueId; i++) {
         this.c(localStorage.getItem("session-key-" + i));
       }
       localStorage.removeItem("command-session-reload");
       this.clearSession();
-    } 
+    }
   }
 
   clearSession() {
@@ -577,7 +576,8 @@ class t_command {
         break;
       case "load":
         break;
-      case "func":
+      case "function":
+        r = this.func(line);
         break;
       case "server":
         break;
@@ -586,12 +586,11 @@ class t_command {
         break;
       case "run":
         break;
-      case "styles":
-        r = this.styles(line);
-        break;
       case "reload":
         r = this.reload(line);
         break;
+      case ">":
+        r = this._eval(line);
       default:
         this.log.throw("Unknown command in " + arr[0]);
         return false;
@@ -616,7 +615,7 @@ class t_command {
     var param = "";
 
     //Get tag and his param
-    tag = this.splitCommandParams(tag);
+    tag = this.splitLineParams(tag);
     param = tag[1];
 
     var newTag = document.createElement(tag[0]);
@@ -624,7 +623,7 @@ class t_command {
     if (param !== "") {
       let isId = false;
 
-      param = this.splitParams(param, ",");
+      param = this.splitParamsBy(param, ",");
       for (let i = 0; i < param.length; i++) {
         newTag.setAttribute(param[i][0], param[i][1]);
         if (param[i][0] === "id") isId = true;
@@ -642,7 +641,7 @@ class t_command {
 
     //Get parent
     var oldparent = {};
-    parent = this.splitCommandParams(parent);
+    parent = this.splitLineParams(parent);
     if (parent[1].toLowerCase().trim() !== "last") {
       oldparent = this.getElement(parent[1]);
 
@@ -663,7 +662,7 @@ class t_command {
     newTag = this.setStyle(newTag, style);
     newTag = this.setEvent(newTag, event);
     if (text.length > 0)
-      newTag.innerHTML += this.splitCommandParams(text)[1];
+      newTag.innerHTML += this.splitLineParams(text)[1];
 
     oldparent.appendChild(newTag);
     this.storyId.push(newTag.id);
@@ -707,7 +706,7 @@ class t_command {
   //add in{byid:generated-id-0} event {dblclick:{alert("not mark")}} text{hello my pinas} style{color:white;  width:  10px; height: 100px;  background: black}
   c_add_text(findBy, text) {
 
-    text = this.splitCommandParams(text)[1];
+    text = this.splitLineParams(text)[1];
     findBy = this.collectElement(findBy);
 
     if (Array.isArray(findBy)) {
@@ -758,7 +757,7 @@ class t_command {
 
     findBy = this.collectElement(findBy);
 
-    event = this.splitCommandParams(event);
+    event = this.splitLineParams(event);
     event = event[1].replace(";", ",");
     event = event.split(",");
     findBy = this.removeEvent(findBy, event);
@@ -772,7 +771,7 @@ class t_command {
 
 
 
-  c_change (findBy, tag) {
+  c_change(findBy, tag) {
     findBy = this.collectElement(findBy);
   }
 
@@ -855,13 +854,13 @@ class t_command {
       };
 
 
-      let oldStyles = this.splitCommandParams("style{" + elem.style.cssText + "}");
-      style = this.splitCommandParams(style);
+      let oldStyles = this.splitLineParams("style{" + elem.style.cssText + "}");
+      style = this.splitLineParams(style);
 
       let styleClassName = this.getClassName(style[1]);
 
-      oldStyles = this.splitParamsDetail(oldStyles[1], ";");
-      style = this.splitParamsDetail(style[1], ";");
+      oldStyles = this.splitParamsByDetail(oldStyles[1], ";");
+      style = this.splitParamsByDetail(style[1], ";");
 
       for (let i = oldStyles.length - 1; i > -1; i--) {
         for (let j = style.length - 1; j > -1; j--) {
@@ -891,7 +890,7 @@ class t_command {
     var param = "";
 
     if (style.length > 0) {
-      style = this.splitCommandParams(style);
+      style = this.splitLineParams(style);
       buf = style[0];
       param = style[1];
 
@@ -913,7 +912,7 @@ class t_command {
       }
     }
 
-    var param = this.splitFuncs(event.trim());
+    var param = this.splitFuncsForEvent(event.trim());
 
     for (let i = 0; i < param.length; i++) {
 
@@ -950,7 +949,7 @@ class t_command {
 
 
   collectElement(findBy) {
-    findBy = this.splitCommandParams(findBy);
+    findBy = this.splitLineParams(findBy);
     findBy = this.getElement(findBy[1]);
 
     if (isNull(findBy)) {
@@ -1064,7 +1063,7 @@ class t_command {
 
 
 
-  splitParams(value, on) {
+  splitParamsBy(value, on) {
 
     var buf = "";
     var arr = [];
@@ -1097,7 +1096,7 @@ class t_command {
     return arr;
   }
 
-  splitLineParams(line) {
+  splitCommandParams(line) {
     var len = line.length;
     var arr = [];
     var buf = "";
@@ -1201,7 +1200,7 @@ class t_command {
     return arr;
   }
 
-  splitCommandParams(value) {
+  splitLineParams(value) {
     var buf = "";
     var param = "";
     var arr = [];
@@ -1226,7 +1225,7 @@ class t_command {
     return arr;
   }
 
-  splitFuncs(value) {
+  splitFuncsForEvent(value) {
     var arr = [];
     var buf = "";
     var param = "";
@@ -1287,7 +1286,7 @@ class t_command {
     return arr;
   }
 
-  splitParamsDetail(value, on) {
+  splitParamsByDetail(value, on) {
 
     var buf = "";
     var arr = [];
@@ -1399,36 +1398,36 @@ class t_command {
 
     var f5 = (el, arr, ev) => {
       el = f2(el, ev);
-      for (let j = 0; j < ev.length; j++) 
+      for (let j = 0; j < ev.length; j++)
         el = f4(el, arr, ev[j]);
-      
+
       return el;
     }
-    
+
 
     if (HTMLCollection.prototype.isPrototypeOf(elem)) {
 
-      if (this.eventListenerOnce.length > 0) 
-        for (let i = 0; i < elem.length; i++) 
+      if (this.eventListenerOnce.length > 0)
+        for (let i = 0; i < elem.length; i++)
           pastElem = f3(elem[i], pastElem);
 
       for (let i = 0; i < elem.length; i++) {
         Array.isArray(event) ?
-          elem[i] = f5(elem[i], pastElem, event):
+          elem[i] = f5(elem[i], pastElem, event) :
           elem[i] = f4(elem[i], pastElem, event);
-        
+
       }
-   
+
     } else {
       if (this.eventListenerOnce.length > 0) pastElem = f3(elem, pastElem);
 
       Array.isArray(event) ?
-        elem = f5(elem, pastElem, event):
+        elem = f5(elem, pastElem, event) :
         elem = f4(elem, pastElem, event);
-      
-      
+
+
     }
-    
+
 
     return elem;
     /*
@@ -1478,7 +1477,7 @@ class t_command {
       return false;
     }
 
-    params = this.splitLineParams(bufLine);
+    params = this.splitCommandParams(bufLine);
     for (let i = 0; i < params.length; i++) {
 
       for (let j = 0; j < params[i].length; j++) {
@@ -1616,7 +1615,7 @@ class t_command {
       return false;
     }
 
-    params = this.splitLineParams(bufLine);
+    params = this.splitCommandParams(bufLine);
     for (let i = 0; i < params.length; i++) {
 
       var bufStr = "";
@@ -1718,12 +1717,12 @@ class t_command {
       return false;
     }
 
-    params = this.splitLineParams(bufLine);
+    params = this.splitCommandParams(bufLine);
     for (let i = 0; i < params.length; i++) {
 
       var bufStr = "";
       for (let j = 0; j < params[i].length; j++) {
-        
+
         if (this.isTag(bufStr)) {
           if (params[i][j] === " " || params[i][j] === "{") {
             tag = params[i];
@@ -1763,7 +1762,7 @@ class t_command {
     }
 
 
-    
+
 
     console.log("tag: " + tag);
     console.log("findBy: " + findBy);
@@ -1802,7 +1801,6 @@ class t_command {
   }
 
 
-  //TODO тута будем 
   //new style name{background: #d83098; margin: 0;padding: 0;color: white;font: 15pt/21pt font-enzyme, Arial, sans-serif; }
   //new style google{background: #f2f3f4; margin: 0;padding: 0;color: white;font: 15pt/21pt font-enzyme, Arial, sans-serif; }
   _new(line) {
@@ -1814,23 +1812,25 @@ class t_command {
     var f1 = (b) => {
       let a = "";
       for (let i = 0; i < b.length; i++)
-      if (b[i] === " ")
-        for (i++; i < b.length; i++)
-          a += b[i];
+        if (b[i] === " ")
+          for (i++; i < b.length; i++)
+            a += b[i];
       return a;
     }
-    
+
     bufLine = f1(line);
     type = bufLine.split(" ")[0];
-    
-    params = this.splitLineParams(bufLine);
+
+    params = this.splitCommandParams(bufLine);
 
     if (type === "style") {
 
-      let styleName = this.splitCommandParams(params[0])[0];
-      //let styleParams = styleName[1];
 
-      
+      let styleName = bufLine.indexOf("{") == -1 ?
+        this.splitLineParams(params[0])[0] :
+        bufLine.substr(type.length, bufLine.indexOf("{") - type.length).trim();
+
+
       let styleTag = document.getElementsByTagName("style")[0];
       if (typeof styleTag === "undefined") {
         let headTag = document.getElementsByTagName("head")[0] || document.createElement("head");
@@ -1838,11 +1838,12 @@ class t_command {
         headTag.appendChild(styleTag);
       }
 
-      this.isTag(styleName) ? params[0] : params[0] = "." + params[0];
+      this.isTag(styleName) ? 0 : styleName[0] === "#" ? 0 : styleName[0] === "." ? 0 : styleName = "." + styleName;
+      params = styleName + params[0].substr(params[0].indexOf("{")).trim();
 
-      styleTag.styleSheet ? 
-      styleTag.styleSheet.cssText = params[0] : 
-      styleTag.appendChild(document.createTextNode(params[0]));
+      styleTag.styleSheet ?
+        styleTag.styleSheet.cssText = params :
+        styleTag.appendChild(document.createTextNode(params));
 
       return true;
     }
@@ -1864,6 +1865,80 @@ class t_command {
   }
 
 
+  //function alert("hi")
+  //function asds(a) {alert("ss")if ("a" == "c") {} else {alert("gay")} alert(a)}
+  //function test_SayHello()
+  func(line) {
+    var bufLine = "";
+    var bodyFunc = [];
+
+    var f1 = (b) => {
+      let a = "";
+      for (let i = 0; i < b.length; i++)
+        if (b[i] === " ")
+          for (i++; i < b.length; i++)
+            a += b[i];
+      return a;
+    }
+
+    //Get func body
+    var f2 = (s) => {
+      let a = 1,
+        i = 1;
+      s = s.substr(s.indexOf("{"), s.length - s.indexOf("{"));
+      let len = s.length;
+
+      let buf = "{";
+      for (i; a > 0; i++) {
+        if (s[i] === "{") a++;
+        if (s[i] === "}") a--;
+        if (typeof s[i] !== "undefined")
+          buf += s[i];
+        if (i >= len) break;
+      }
+      return s.substr(0, i);
+    }
+
+    bufLine = f1(line);
+    bodyFunc = this.splitCommandParams(bufLine)[0];
+
+    if (typeof bodyFunc === "undefined") {
+      eval(bufLine);
+      return true;
+    } else {
+      if (bufLine.indexOf(")") == -1 || (bufLine.indexOf(")") > bufLine.indexOf("{"))) {
+        this.log.throw("There are no function parameters");
+        return false;
+      }
+
+      let headFunc = bufLine.substr(0, bufLine.indexOf(")") + 1);
+      let paramInHead = headFunc.substr(bufLine.indexOf("(") + 1, headFunc.length - bufLine.indexOf(")"));
+      if (paramInHead === ")") paramInHead = "";
+      headFunc = bufLine.substr(0, bufLine.indexOf("("));
+      bodyFunc = f2(bodyFunc);
+
+
+      let script = document.getElementById("generated-scipt-id");
+      if (!script) {
+        script = document.createElement("script");
+        script.type = "text/javascript";
+        script.id = "generated-scipt-id";
+        document.getElementsByTagName("head")[0].appendChild(script);
+      }
+
+      script.text = "function " + headFunc + "(" + paramInHead + ")" + bodyFunc;
+
+    }
+    return true;
+  }
+
+  //> alert(12 + 22)
+  _eval(line) {
+    eval(line.substr(line.indexOf(">") + 1, line.length).trim());
+    return true;
+  }
+
+
   reload(line) {
     localStorage.setItem("command-session-reload", 1);
     if (!this.sessionSave) {
@@ -1875,10 +1950,6 @@ class t_command {
     return false
   }
 
-  //TODO будет показывать созданные стили
-  styles(line) {
-
-  }
 
   isTag(value) {
     for (let i = 0; i < t_command_tags.length; i++) {
