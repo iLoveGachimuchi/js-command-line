@@ -1,15 +1,15 @@
-command("\
-  new style #sp-wave-main {\
+command("new style \
+  #sp-wave-main {\
   min-height: 100vh;\
   display: flex;\
   align-items: center;\
   justify-content: center;\
   background-color: #f0f0f0;\
 }");
-command("\
-  new style #sp-wave-main__container {\
+command("new style \
+  #sp-wave-main__container {\
   width: 480px;\
-  height: 240px;\
+  height: 280px;\
   display: flex;\
   align-items: center;\
   justify-content: center;\
@@ -21,11 +21,12 @@ command("\
   border-radius: 8px;\
   box-shadow: 0 16px 24px -8px rgba(0, 0, 0, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.5);\
 }");
-command("\
-new style #sp-wave-main__container h1{ font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,\
+command("new style \
+  #sp-wave-main__container h1{ font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,\
   Helvetica Neue, sans-serif;\
   font-size: 24px;\
   letter-spacing: 1px;\
+  margin-bottom: 10px;\
   font-weight: 200;\
   -webkit-user-select: none;\
   -moz-user-select: none;\
@@ -39,8 +40,23 @@ command("new style #sp-wave-main__container canvas {\
 
 command("add div{id: sp-wave-main} parent{byTag:body[0]}");
 command("add div{id: sp-wave-main__container} parent{byId:sp-wave-main}");
+command("add h1{id: sp-wave-main-h1} parent{byId:sp-wave-main__container} text{How can I help you?}");
 command("add canvas{id: waves} parent{byId:sp-wave-main__container}");
-command("add h1 parent{byId:sp-wave-main__container} text{How can I help you?}");
+command("add in{byId:sp-wave-main-h1} event{click: h1HelpClick(e)}");
+
+
+const WAVE_WIDTH = 480;
+const WAVE_HIEGHT = 130;
+
+
+
+var waveWidthWindow = function () {
+  return WAVE_WIDTH;
+}
+
+var waveHeightWindow = function () {
+  return WAVE_HIEGHT;
+}
 
 
 var waves = new SineWaves({
@@ -52,41 +68,55 @@ var waves = new SineWaves({
 
   wavesWidth: "75%",
 
+  width: function () {
+    return waveWidthWindow();
+  },
+
+  height: function () {
+    return waveHeightWindow();
+  },
+
   waves: [{
       timeModifier: 4,
       lineWidth: 1,
-      amplitude: -25,
-      wavelength: 25
+      amplitude: 0,
+      wavelength: 25,
+      type: "Fibonacci"
     },
     {
       timeModifier: 2,
       lineWidth: 1,
-      amplitude: -10,
-      wavelength: 30
+      amplitude: 0,
+      wavelength: 30,
+      type: "Fibonacci"
     },
     {
       timeModifier: 1,
       lineWidth: 1,
-      amplitude: -30,
-      wavelength: 30
+      amplitude: 0,
+      wavelength: 30,
+      type: "Fibonacci"
     },
     {
       timeModifier: 3,
       lineWidth: 1,
-      amplitude: 40,
-      wavelength: 40
+      amplitude: 0,
+      wavelength: 40,
+      type: "Fibonacci"
     },
     {
       timeModifier: 0.5,
       lineWidth: 1,
-      amplitude: -60,
-      wavelength: 60
+      amplitude: 0,
+      wavelength: 60,
+      type: "Fibonacci"
     },
     {
       timeModifier: 1.3,
       lineWidth: 1,
-      amplitude: -40,
-      wavelength: 40
+      amplitude: 0,
+      wavelength: 40,
+      type: "Fibonacci"
     }
   ],
 
@@ -109,3 +139,51 @@ var waves = new SineWaves({
     gradient = void 0;
   }
 });
+
+
+//TODO здеся сделано анимация дял волн сделать беольше чем анимация
+
+
+function h1HelpClick(e) {
+  var waveTimerAnimation = 0;
+
+  let f = (func) => {
+    let ownTimer = 0;
+    let timer = setInterval(() => {
+      if (ownTimer > 60) {
+        clearInterval(timer);
+        return;
+      }
+      func();
+      ownTimer++;
+    }, 800 / 200 /* 1sec/50fps */ );
+  }
+
+  if (recorder !== null) {
+    waveTimerAnimation = 0;
+    recorder = null;
+    f(() => {
+      waves.waves[0].amplitude -= ((waveTimerAnimation * 25) % 3 == 0) ? 1 : 0;
+      waves.waves[1].amplitude -= ((waveTimerAnimation * 12) % 6 == 0) ? 1 : 0;
+      waves.waves[2].amplitude -= ((waveTimerAnimation * 17) % 2 == 0) ? 1 : 0;
+      waves.waves[3].amplitude += ((waveTimerAnimation * 17) % 4 == 0) ? 1 : 0;
+      waves.waves[4].amplitude -= ((waveTimerAnimation * 35) % 5 == 0) ? 1 : 0;
+      waves.waves[5].amplitude -= ((waveTimerAnimation * 43) % 2 == 0) ? 1 : 0;
+      waveTimerAnimation++;
+    });
+
+  } else {
+    recorder = 1;
+    f(() => {
+      waves.waves[0].amplitude += ((waveTimerAnimation * 25) % 3 == 0) ? 1 : 0;
+      waves.waves[1].amplitude += ((waveTimerAnimation * 12) % 6 == 0) ? 1 : 0;
+      waves.waves[2].amplitude += ((waveTimerAnimation * 17) % 2 == 0) ? 1 : 0;
+      waves.waves[3].amplitude -= ((waveTimerAnimation * 17) % 4 == 0) ? 1 : 0;
+      waves.waves[4].amplitude += ((waveTimerAnimation * 35) % 5 == 0) ? 1 : 0;
+      waves.waves[5].amplitude += ((waveTimerAnimation * 43) % 2 == 0) ? 1 : 0;
+      waveTimerAnimation--;
+    });
+    waveTimerAnimation = 0;
+  }
+  
+}
