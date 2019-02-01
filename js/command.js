@@ -19,7 +19,7 @@ function test_SayHello() {
 }
 
 const t_command_com = ["add", "del", "change", "server", "func", "load"];
-const t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load"];
+const t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load", "mouseover"];
 const t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section",
   "td", "th", "title", "a", "header", "footer", "canvas", "svg", "defs", "filter", "feGaussianBlur", "feColorMatrix",
   "feColorMatrix", "feOffset", "feComposite", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "script" ,"select"
@@ -1397,7 +1397,7 @@ class t_command {
         headTag.appendChild(styleTag);
       }
 
-      this.isTag(styleName) ? 0 : styleName[0] === "#" ? 0 : styleName[0] === "." ? 0 : styleName = "." + styleName;
+      this.isTag(styleName) ? 0 : styleName[0] === "@" ? 0 : styleName[0] === "#" ? 0 : styleName[0] === "." ? 0 : styleName = "." + styleName;
       params = styleName + params[0].substr(params[0].indexOf("{")).trim();
 
       styleTag.styleSheet ?
