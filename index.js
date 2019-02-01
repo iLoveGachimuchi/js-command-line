@@ -1,26 +1,59 @@
 command("new style \
   #sp-wave-main {\
-  min-height: 100vh;\
-  display: flex;\
-  align-items: center;\
-  justify-content: center;\
-  background-color: #f0f0f0;\
+    min-height: 100vh;\
+    display: flex;\
+    align-items: center;\
+    justify-content: center;\
+    background-color: #f0f0f0;\
 }");
 command("new style \
   #sp-wave-main__container {\
-  width: 480px;\
-  height: 280px;\
-  display: flex;\
-  align-items: center;\
-  justify-content: center;\
-  flex-direction: column;\
-  color: #000;\
-  background-image: radial-gradient(to bottom, #0f0f0f 0%, #0a0a0a 100%); \
-  background: #fff;\
-  opacity: 0.8;\
-  border-radius: 8px;\
-  box-shadow: 0 16px 24px -8px rgba(0, 0, 0, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.5);\
+    position: relative;\
+    width: 480px;\
+    height: 280px;\
+    display: flex;\
+    align-items: center;\
+    justify-content: center;\
+    flex-direction: column;\
+    color: #000;\
+    background: #ffffff;\
+    background-image: radial-gradient(to bottom, #0f0f0f 0%, #0a0a0a 100%); \
+    opacity: 0.8;\
+    border-radius: 8px;\
+    box-shadow: 0 16px 24px -8px rgba(0, 0, 0, 0.25), 0 8px 16px -8px rgba(0, 0, 0, 0.5);\
 }");
+
+command("new style \
+  .sp-wave-main-animation {\
+    cursor: pointer;\
+    width: 100%;\
+    height: 100%;\
+    position: absolute; \
+    border-radius: 8px;\
+    background: #fff;\
+    opacity: 0.9;\
+    transition: opacity 0.3s, visibility 0s linear 0.3s;\
+}");
+command("new style \
+  .sp-wave-main-animation:before {\
+    transition: all ease;\
+    transform: scale(0);\
+    animation: spinner 2s infinite;\
+}");
+command("new style \
+  .sp-wave-main-animation:hover {\
+    opacity: .1;\
+    z-index: 999;  \
+    width: 480px;\
+    height: 280px;\
+    display: flex;\
+    align-items: center;\
+    justify-content: center;\
+    flex-direction: column;\
+    color: #000;\
+    opacity: 0;\
+}");
+
 command("new style \
   #sp-wave-main__container h1{ font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,\
   Helvetica Neue, sans-serif;\
@@ -41,8 +74,19 @@ command("new style #sp-wave-main__container canvas {\
 command("add div{id: sp-wave-main} parent{byTag:body[0]}");
 command("add div{id: sp-wave-main__container} parent{byId:sp-wave-main}");
 command("add h1{id: sp-wave-main-h1} parent{byId:sp-wave-main__container} text{How can I help you?}");
+command("add div{id: sp-wave-animation} style{class:sp-wave-main-animation} parent{byId:sp-wave-main__container}");
 command("add canvas{id: waves} parent{byId:sp-wave-main__container}");
-command("add in{byId:sp-wave-main-h1} event{click: h1HelpClick(e)}");
+
+
+command("add in{byId:sp-wave-animation} event{click: h1HelpClick(e); mouseover: wavesMouseOver(e); mouseout: wavesMouseOut(e)}");
+
+
+
+
+
+
+
+
 
 
 const WAVE_WIDTH = 480;
@@ -141,9 +185,6 @@ var waves = new SineWaves({
 });
 
 
-//TODO здеся сделано анимация дял волн сделать беольше чем анимация
-
-
 function h1HelpClick(e) {
   var waveTimerAnimation = 0;
 
@@ -185,5 +226,14 @@ function h1HelpClick(e) {
     });
     waveTimerAnimation = 0;
   }
-  
+
+}
+
+//TODO сделать мигающий палец, мол тык на меня
+function wavesMouseOver(e) {
+  console.log("gay");
+}
+
+function wavesMouseOut(e) {
+  console.log("not gay");
 }
