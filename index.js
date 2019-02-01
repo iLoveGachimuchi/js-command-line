@@ -31,29 +31,49 @@ command("new style \
     position: absolute; \
     border-radius: 8px;\
     background: #fff;\
+    opacity: 0;\
+}");
+command("new style \
+  .sp-wave-main-animation__hover {\
     opacity: 0.9;\
     transition: opacity 0.3s, visibility 0s linear 0.3s;\
 }");
 command("new style \
-  .sp-wave-main-animation:before {\
-    transition: all ease;\
-    transform: scale(0);\
-    animation: spinner 2s infinite;\
-}");
-command("new style \
-  .sp-wave-main-animation:hover {\
+  .sp-wave-main-animation__hover:hover {\
     opacity: .1;\
-    z-index: 999;  \
-    width: 480px;\
-    height: 280px;\
-    display: flex;\
+    z-index: 90;  \
+    background-image: none\
     align-items: center;\
     justify-content: center;\
-    flex-direction: column;\
-    color: #000;\
+    border-radius: 8px;\
     opacity: 0;\
 }");
-
+command("new style \
+  .sp-wave-animation__mic {\
+    width: 480px;\
+    height: 280px;\
+    position: absolute; \
+    background: url(img/pointer-up.png);\
+    background-repeat: no-repeat;\
+    background-size: 34%;\
+    background-position: center;\
+    transition: all ease;\
+    transform: scale(1);\
+    z-index: 89;\
+    opacity: 0.9;\
+    animation: mic 2s infinite;\
+}");
+command("new style \
+  .sp-wave-animation__mic:hover {\
+    width: 0;\
+    height: 0;\
+    position: absolute; \
+    background: none\
+    background-position: center;\
+    transform: scale(1);\
+    z-index: -2;\
+    opacity: 1;\
+}");
 command("new style \
   #sp-wave-main__container h1{ font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans,\
   Helvetica Neue, sans-serif;\
@@ -74,11 +94,12 @@ command("new style #sp-wave-main__container canvas {\
 command("add div{id: sp-wave-main} parent{byTag:body[0]}");
 command("add div{id: sp-wave-main__container} parent{byId:sp-wave-main}");
 command("add h1{id: sp-wave-main-h1} parent{byId:sp-wave-main__container} text{How can I help you?}");
-command("add div{id: sp-wave-animation} style{class:sp-wave-main-animation} parent{byId:sp-wave-main__container}");
+command("add div{id: sp-wave-animation-0} style{class:sp-wave-main-animation sp-wave-main-animation__hover} parent{byId:sp-wave-main__container}");
+command("add div{id: sp-wave-animation-1} style{class:sp-wave-animation__mic} parent{byId:sp-wave-main__container}");
 command("add canvas{id: waves} parent{byId:sp-wave-main__container}");
 
 
-command("add in{byId:sp-wave-animation} event{click: h1HelpClick(e); mouseover: wavesMouseOver(e); mouseout: wavesMouseOut(e)}");
+command("add in{byId:sp-wave-animation-0} event{click: h1HelpClick(e); mouseover: wavesMouseOver(e); mouseout: wavesMouseOut(e)}");
 
 
 
@@ -185,6 +206,7 @@ var waves = new SineWaves({
 });
 
 
+//TODO recorder !!ПОЧИНИТЬ!! не записывает, падла
 function h1HelpClick(e) {
   var waveTimerAnimation = 0;
 
@@ -229,11 +251,15 @@ function h1HelpClick(e) {
 
 }
 
-//TODO сделать мигающий палец, мол тык на меня
+
 function wavesMouseOver(e) {
-  console.log("gay");
+  command("del in{byId: sp-wave-animation-0} style{class: sp-wave-main-animation__hover}");
+  command("del in{byId: sp-wave-animation-1} style");
 }
 
 function wavesMouseOut(e) {
-  console.log("not gay");
+  if (recorder !== null) {
+    command("add in{byId: sp-wave-animation-0} style{class:sp-wave-main-animation__hover}");
+    command("add in{byId: sp-wave-animation-1} style{class:sp-wave-animation__mic}");
+  }
 }
