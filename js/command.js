@@ -359,8 +359,9 @@ class t_command {
 
   unSetStyle(elem, style) {
 
-    if (style === "style") {
+    if (style.trim() === "style") {
       elem.style.cssText = "";
+      elem.className = "";
       return elem;
     }
 
@@ -435,7 +436,8 @@ class t_command {
 
       elem.style.cssText = f2(oldStyles, ";");
 
-      elem.className = f1(elem.className.trim(), styleClassName)
+      elem.className = f1(elem.className.trim(), styleClassName);
+      elem.className = elem.className.trim();
     }
 
     return elem;
@@ -511,7 +513,7 @@ class t_command {
     findBy = this.splitLineParams(findBy);
     findBy = this.getElement(findBy[1]);
 
-    if (isNull(findBy)) {
+    if (isNull(findBy) || findBy === "undefined" || findBy === "") {
       this.log.throw("There is no possibility of search, \"body\" will be by default used in " + line);
       findBy = document.getElementsByTagName("body")[0];
     }
