@@ -18,11 +18,57 @@ function test_SayHello() {
   alert("its a test, hi");
 }
 
+
+
+
+class t_console_log {
+
+  constructor() {
+    this.story = [];
+    this.err = [];
+    this.tp = [];
+    this.s = false;
+    this.t = false;
+  }
+
+  print(line) {
+    console.log(line);
+  }
+
+  printf(line) {
+    this.story.push(line);
+    if (this.s) console.log(line);
+  }
+
+  throw (line) {
+    this.err.push(line);
+    if (this.t) console.log(line);
+  }
+
+  type(line) {
+    this.tp.push(line);
+    if (this.s) varDump(line);
+  }
+
+  log() {
+    console.log("==================\nErrors\n==================");
+    for (let i = 0; i < this.err.length; i++) console.log(err[i]);
+
+    console.log("==================\nStories\n=================");
+    for (let i = 0; i < this.err.length; i++) console.log(story[i]);
+
+    console.log("==================\nTypes\n===================");
+    for (let i = 0; i < this.err.length; i++) varDump(story[i]);
+  }
+};
+
+
+
 const t_command_com = ["add", "del", "change", "server", "func", "load"];
 const t_command_events = ["click", "mouseDown", "blur", "focus", "change", "dblclick", "keydown", "keypress", "keyup", "load", "mouseover"];
 const t_command_tags = ["p", "body", "div", "span", "main", "button", "br", "input", "form", "img", "li", "ul", "table", "section",
   "td", "th", "title", "a", "header", "footer", "canvas", "svg", "defs", "filter", "feGaussianBlur", "feColorMatrix",
-  "feColorMatrix", "feOffset", "feComposite", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "script" ,"select"
+  "feColorMatrix", "feOffset", "feComposite", "h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8", "script", "select"
 ];
 const t_command_param = ["type", "src", "image", "name", "id", "text", "value"];
 const t_command_params = ["style", "parent", "text", "in"];
@@ -30,9 +76,8 @@ const t_command_params = ["style", "parent", "text", "in"];
 
 class t_command {
 
-  constructor(server) {
+  constructor() {
     this.sessionSave = false;
-    this.server = server;
     this.storyCommand = [];
     this.storyId = [];
     this.eventListenerOnce = [];
@@ -280,17 +325,52 @@ class t_command {
 
 
   //del in {byTag:div *}
-  c_del(findBy) {
+  c_del(findBy, sum) {
+    
+    let sumDel = sum > 0 ? true : false;
+    console.log(sumDel);
+    let f = (elem) => {
+      
+      if (!sumDel) {
+        let parent = elem.parentElement || null;
+        if (parent != null) {
+          let children = elementChildren(elem);
+          for (let i = 0; i < children.length; i++) {
+            parent.appendChild(children[i]);
+          }
+          
+        }
+        elem.remove();
+        return;
+      }
+
+      let children = elem.childNodes;
+      for (let i = 0; i < children.length; i++) {
+        try {
+          elem.removeChild(children[i]);
+        } catch {
+          break;
+        }
+      }
+      elem.remove();
+      return;
+    }
 
     findBy = this.collectElement(findBy);
 
-    if (Array.isArray(findBy)) {
-      for (let i = 0; i < findBy.length; i++)
-        findBy[i].remove();
-    } else {
-      findBy.remove();
-    }
 
+    if (Array.isArray(findBy)) {
+      for (let i = 0; i < findBy.length; i++) {
+        try {
+          f(findBy[i]);
+          //findBy[i].remove();
+        } catch {
+          continue;
+        }
+      }
+    } else {
+      f(findBy);
+    }
   }
 
   //del in {byTag:div *} style event{dblclick; click} text
@@ -1136,7 +1216,7 @@ class t_command {
     }
   }
 
-  //del in{byTag:div 1}
+  //del in{byTag:div 1} *
   //del in{byTag:div *}
   //del in{byTag:div *} style{className: clickable}
   //del in{byTag:div *} style
@@ -1241,7 +1321,7 @@ class t_command {
       }
 
       if (inc === 0) {
-        this.c_del(findBy);
+        this.c_del(findBy, bufLine[bufLine.length - 1] === "*" ? 1 : -1);
       }
       return true;
 

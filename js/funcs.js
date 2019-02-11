@@ -101,6 +101,28 @@ function atos(arr, l) {
   return c;
 }
 
+
+/**
+ * Return direct children elements.
+ *
+ * @param {HTMLElement}
+ * @return {Array}
+ */
+function elementChildren (element) {
+  var childNodes = element.childNodes,
+      children = [],
+      i = childNodes.length;
+
+  while (i--) {
+      if (childNodes[i].nodeType == 1) {
+          children.unshift(childNodes[i]);
+      }
+  }
+
+  return children;
+}
+
+
 Object.prototype.isEmpty = function () {
   for (var key in this) {
     if (this.hasOwnProperty(key))
