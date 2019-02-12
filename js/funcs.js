@@ -108,15 +108,15 @@ function atos(arr, l) {
  * @param {HTMLElement}
  * @return {Array}
  */
-function elementChildren (element) {
+function elementChildren(element) {
   var childNodes = element.childNodes,
-      children = [],
-      i = childNodes.length;
+    children = [],
+    i = childNodes.length;
 
   while (i--) {
-      if (childNodes[i].nodeType == 1) {
-          children.unshift(childNodes[i]);
-      }
+    if (childNodes[i].nodeType == 1) {
+      children.unshift(childNodes[i]);
+    }
   }
 
   return children;
@@ -131,17 +131,37 @@ function getRandomArbitrary(min, max) {
 }
 
 /**
-* Returns a random integer between min (inclusive) and max (inclusive).
-* The value is no lower than min (or the next integer greater than min
-* if min isn't an integer) and no greater than max (or the next integer
-* lower than max if max isn't an integer).
-* Using Math.round() will give you a non-uniform distribution!
-*/
+ * Returns a random integer between min (inclusive) and max (inclusive).
+ * The value is no lower than min (or the next integer greater than min
+ * if min isn't an integer) and no greater than max (or the next integer
+ * lower than max if max isn't an integer).
+ * Using Math.round() will give you a non-uniform distribution!
+ */
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+/**
+ * @param {string} string - source string
+ * @param {string} separator - source string
+ * Deletes all copies of words in line. Breaks into the massif on a divider 
+ * and looks for to an identical lines. Returns the collected array in 
+ * string
+ */
+function removeСopies(string, separator) {
+  var a = string.split(separator);
+  for (var q = 1, i = 1; q < a.length; ++q) {
+    if (a[q] !== a[q - 1]) {
+      a[i++] = a[q];
+    }
+  }
+
+  a.length = i;
+  return a.join(separator);
+}
+
 
 Object.prototype.isEmpty = function () {
   for (var key in this) {
@@ -237,7 +257,8 @@ function getCoords(elem) {
 
 }
 
-function getPosAndSize(elem) {;
+function getPosAndSize(elem) {
+  ;
   var box = elem.getBoundingClientRect();
   return {
     top: box.top + pageYOffset,
@@ -363,7 +384,7 @@ function drawImageInPerspective(
   bottomLeftX, bottomLeftY,
   topRightX, topRightY,
   bottomRightX, bottomRightY,
-   flipHorizontally,
+  flipHorizontally,
   flipVertically
 ) {
 
@@ -416,7 +437,7 @@ function drawImageInPerspective(
   for (var tmpY = 0; tmpY < tmpHeight; tmpY++) {
     for (var tmpX = 0; tmpX < tmpWidth; tmpX++) {
 
-       tmpPoint = (tmpY * tmpWidth + tmpX) * 4;
+      tmpPoint = (tmpY * tmpWidth + tmpX) * 4;
       targetX = (
           targetTopOffset +
           targetTopWidth * tmpX / tmpWidth
