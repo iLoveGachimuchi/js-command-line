@@ -328,7 +328,6 @@ class t_command {
   c_del(findBy, sum) {
     
     let sumDel = sum > 0 ? true : false;
-    console.log(sumDel);
     let f = (elem) => {
       
       if (!sumDel) {
