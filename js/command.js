@@ -178,6 +178,9 @@ class t_command {
       case "change":
         r = this.change(line);
         break;
+      case "get":
+        r = this._get(line);
+        break;
       case "load":
         break;
       case "function":
@@ -205,7 +208,7 @@ class t_command {
       localStorage.setItem("session-key-" + this.sessionUnuqueId, line);
       this.sessionUnuqueId++;
     }
-    return true;
+    return r;
   }
 
   //add p style{color:white;  width:  10px;  class:font-horizon  clickable}
@@ -326,10 +329,10 @@ class t_command {
 
   //del in {byTag:div *}
   c_del(findBy, sum) {
-    
+
     let sumDel = sum > 0 ? true : false;
     let f = (elem) => {
-      
+
       if (!sumDel) {
         let parent = elem.parentElement || null;
         if (parent != null) {
@@ -337,7 +340,7 @@ class t_command {
           for (let i = 0; i < children.length; i++) {
             parent.appendChild(children[i]);
           }
-          
+
         }
         elem.remove();
         return;
@@ -1440,6 +1443,57 @@ class t_command {
     }
   }
 
+  //get in{byId: parampampam}
+  _get(line) {
+    var bufLine = "";
+    var params = [];
+
+    var tag = "";
+    var findBy = "";
+    var style = "";
+    var event = "";
+    var text = "";
+
+    for (let i = 0; i < line.length; i++)
+      if (line[i] === " ")
+        for (i++; i < line.length; i++)
+          bufLine += line[i];
+
+    var commands = this.splitCommand(bufLine);
+
+    if (bufLine === "") {
+      this.log.throw("There are no parameters in " + line);
+      return false;
+    }
+
+    params = this.splitCommandParams(bufLine);
+    for (let i = 0; i < params.length; i++) {
+
+      var bufStr = "";
+      for (let j = 0; j < params[i].length; j++) {
+
+        if (this.isTag(bufStr)) {
+          if (params[i][j] === " " || params[i][j] === "{") {
+            tag = params[i];
+            bufStr = "";
+            break;
+          }
+        }
+
+        if (bufStr === "in") {
+          if (params[i][j] === " " || params[i][j] === "{") {
+            commands.splice(commands.indexOf(bufStr), 1);
+            findBy = params[i];
+            bufStr = "";
+            break;
+          }
+        }
+        bufStr += params[i][j];
+      }
+    }
+
+    return this.collectElement(findBy);
+  }
 
   //new style name{background: #d83098; margin: 0;padding: 0;color: white;font: 15pt/21pt font-enzyme, Arial, sans-serif; }
   //new style google{background: #f2f3f4; margin: 0;padding: 0;color: white;font: 15pt/21pt font-enzyme, Arial, sans-serif; }
